@@ -8,24 +8,28 @@ from tkinter import *
 import os
 import subprocess
 import threading
+import tkinter.font as tkFont
 
-ToolVersion = "0.01"
-win = Tk()
+ToolVersion = "0.02"
+win = Tk() 
 win.title("== 高速耕地執行工具 == Ver "+ToolVersion)
 win.geometry("640x480")
 # ============================================
 # 預設值變數設定,可手動輸入
 # ============================================
-counter = 0                 #目前執行次數,不須更動
-ChiaVer = "1.1.7"           #安裝的Chia版本(查詢公鑰,礦池公鑰,農民公鑰需要)
-PoltNum = "1"               #執行耕地數量(一次要生產的耕地數量)
-CoreNum = "8"               #耕地使用執行緒數量(依照自己的核心數調整)
-BuketNum = "128"            #耕地使用桶數(不建議更動)
-TempDir1 = "D:\\CHIATEMP\\" #耕地使用的暫存資料夾1
-TempDir2 = "D:\\CHIATEMP\\" #耕地使用的暫存資料夾2(作者建議使用RAM)
-TargetDir = "E:\\CHIA\\"    #耕地完成檔案放置位置
-PoolPublicKey = ""          #礦池公鑰,請按顯示公鑰查詢
-FarmerPublicKey = ""        #農民公鑰,請按顯示公鑰查詢
+fontsize = tkFont.Font(size=11)     #字型尺寸
+DEBUG = 0                           #除錯指令
+counter = 0                         #目前執行次數,不須更動
+fname = "chia_plot.exe"             #chia_plot 高速P圖程式的檔案名稱
+ChiaVer = "1.1.7"                   #安裝的Chia版本(查詢公鑰,礦池公鑰,農民公鑰需要)
+PoltNum = "1"                       #執行耕地數量(一次要生產的耕地數量)
+CoreNum = "8"                       #耕地使用執行緒數量(依照自己的核心數調整)
+BuketNum = "128"                    #耕地使用桶數(不建議更動)
+TempDir1 = "D:\\CHIATEMP\\"         #耕地使用的暫存資料夾1
+TempDir2 = "D:\\CHIATEMP\\"         #耕地使用的暫存資料夾2(作者建議使用RAM)
+TargetDir = "E:\\CHIA\\"            #耕地完成檔案放置位置
+PoolPublicKey = ""                  #礦池公鑰,請按顯示公鑰查詢
+FarmerPublicKey = ""                #農民公鑰,請按顯示公鑰查詢
 # ============================================
 
 def ShowMeInfo():
@@ -33,74 +37,99 @@ def ShowMeInfo():
     chiaver = etrver1.get()
     text1.delete(1.0,"end")
     text1.insert(INSERT," ============================================================== \n")
-    text1.insert(INSERT,"   >> 作者: mymag (mymag_20@msn.com) \n")
-    text1.insert(INSERT,"   >> 網頁: http://fgc.tw \n")
-    text1.insert(INSERT,"   >> 版本: Version "+ToolVersion+" \n")
+    text1.insert(INSERT,"   ➠ 作者: mymag (mymag_20@msn.com) \n")
+    text1.insert(INSERT,"   ➠ 網頁: http://fgc.tw \n")
+    text1.insert(INSERT,"   ➠ 版本: Version "+ToolVersion+" \n")
+    text1.insert(INSERT,"   ➠ 捐贈: xch1vk3tcw89xtk6uqzgxuyssuwm9s4dsklnaa00hyppevxlg9tpulys98erd4 \n")
     text1.insert(INSERT," ============================================================== \n")
     CmdStr = LocalStr+"\\chia-blockchain\\app-"+chiaver+"\\resources\\app.asar.unpacked\\daemon\\chia.exe"
     if os.path.exists(CmdStr):
         CmdStr = CmdStr + " keys show"
         text1.insert(INSERT,CmdStr+" \n")
-        p = subprocess.Popen(CmdStr,shell=False,stdout=subprocess.PIPE)
+        with subprocess.Popen(CmdStr,shell=False,stdout=subprocess.PIPE) as p:
+            showkeys = p.stdout.read().decode("big5")
         text1.insert(INSERT," ============================================================== \n")
-        text1.insert(INSERT,p.stdout.read().decode("big5")+" \n")
-        lblx.config(text="  >> 顯示公鑰資訊...",bg="#404070")
+        text1.insert(INSERT,showkeys+" \n")
+        lblx.config(text="  ➠ 顯示公鑰資訊...",bg="#404070")
     else:
-        text1.insert(INSERT,"  >> Chia主程式不存在...\n")
-        lblx.config(text="  >> Chia主程式不存在...",bg="#404070")
+        text1.insert(INSERT,"  ➠ Chia主程式不存在...\n")
+        lblx.config(text="  ➠ Chia主程式不存在...",bg="#404070")
+        text1.see(END)
 
 def RunCmd(CmdStr):
+    global counter
+    counter = 1
     btn1.config(state=DISABLED)
     btn2.config(state=DISABLED)
-    lblx.config(text="   >> 耕地中,請稍後...... ",bg="#802020")
-    text1.insert(INSERT,"   >> 耕地中,請稍後...... \n")
+    btn3.config(state=DISABLED)
+    btnX.config(state=DISABLED)
+    lblx.config(text="   ➠ 耕地中,請稍後...... ",bg="#802020")
+    text1.insert(INSERT,"   ➠ 耕地中,請稍後...... \n")
     text1.insert(INSERT," ============================================================== \n")
-    p = subprocess.Popen(CmdStr,shell=False,stdout=subprocess.PIPE)
-    while p.poll() == None and p.stdout.readline() !="":
-        text1.insert(INSERT,p.stdout.readline().decode("big5"))
+    # DEBUG 測試用
+    if DEBUG == 1:
+        CmdStr = "ping -n 22 8.8.8.8"
+    # 開始執行指令
+    with subprocess.Popen(CmdStr,shell=True,stdout=subprocess.PIPE) as p:
+        LineStr = p.stdout.readline()
+        LineProcess = "➠"
+        while p.poll() == None and LineStr !="":
+            text1.insert(INSERT,LineStr.decode("big5"))
+            LineStr = p.stdout.readline()
+            LineProcess = LineProcess + "➠"
+            counter += 1
+            if counter == 21:
+                counter = 1
+                LineProcess = "➠"
+            lblx.config(text=" ➠ 耕地中,請稍後... "+LineProcess,bg="#802020")
+            text1.see(END)
+    
     text1.insert(INSERT," ============================================================== \n")
-    lblx.config(text="   >> 耕地完成....... ",bg="#408040")
-    text1.insert(INSERT,"   >> 耕地完成...... \n")
+    lblx.config(text="   ➠ 耕地完成....... ",bg="#408040")
+    text1.insert(INSERT,"   ➠ 耕地完成...... \n")
+    text1.see(END)
     btn1.config(state=NORMAL)
     btn2.config(state=NORMAL)
+    btn3.config(state=NORMAL)
+    btnX.config(state=NORMAL)
     return p
 
 def runme():
     global counter
-    fname = "chia_plot.exe"
-    #fname = "cptool.pyw"
-    if os.path.exists(fname):
+    global fname
+    counter = 1
+    cmdstr = os.path.abspath(fname) + " -n "+etr1.get()+" -r "+etr2.get()+" -u "+etr3.get()+" -t "+etr4.get()+" -2 "+etr5.get()+" -d "+etr8.get()+" -p "+etr6.get()+" -f "+etr7.get()
+    if os.path.exists(fname) or DEBUG == 1:
         if etr1.get() == "" or etr2.get() == "" or etr3.get() == "" or etr4.get() == "" or etr5.get() == "" or etr6.get() == "" or etr7.get() == "" or etr8.get() == "":
-            text1.insert(INSERT,"   >> 設定框有遺漏輸入設定...... \n")
-            lblx.config(text="  >> 設定框內必須有輸入文字....")
+            text1.delete(1.0,"end")
+            text1.insert(INSERT,"   ➠ 設定框有遺漏輸入設定...... \n")
+            lblx.config(text="  ➠ 設定框內必須有輸入文字....",bg="#604040")
         else:
-            cmdstr = "chia_plot.exe -n "+etr1.get()+" -r "+etr2.get()+" -u "+etr3.get()+" -t "+etr4.get()+" -2 "+etr5.get()+" -d "+etr8.get()+" -p "+etr6.get()+" -f "+etr7.get()+"\n"
-            #cmdstr = "ping tw.yahoo.com"
             counter += 1
-            #text1.delete(1.0,"end")
+            text1.delete(1.0,"end")
             text1.insert(INSERT," ============================================================== \n")
             text1.insert(INSERT,"      第 "+str(counter)+" 次耕地執行中,請稍後!!\n")
             text1.insert(INSERT," ============================================================== \n")
             text1.insert(INSERT,"  "+cmdstr+"\n")
             text1.insert(INSERT," ============================================================== \n")
-            text1.insert(INSERT,"   >> 耕地開始,請稍後...... \n")
-            lblx.config(text="  >> 耕地開始,請稍後....")
+            text1.insert(INSERT,"   ➠ 耕地開始,請稍後...... \n")
+            lblx.config(text="  ➠ 耕地開始,請稍後....")
             # 開一個執行緒
             t1 = threading.Thread(target=RunCmd,args=(cmdstr,))
             t1.start()
-
     else:
         text1.delete(1.0,"end")
         text1.insert(INSERT," ============================================================== \n")
         text1.insert(INSERT,"      程式發生一些狀況,請依照以下的說明處理!! \n")
         text1.insert(INSERT," ============================================================== \n")
-        text1.insert(INSERT," 耕地程式 chia_plot.exe 檔案不存在!! \n 請前往 https://github.com/stotiks/chia-plotter/releases 下載,放在此資料夾!")
-        lblx.config(text="  >> 程式檢測到一些況狀,請排除...",bg="#604040")
+        text1.insert(INSERT,"\n 耕地程式 "+ os.path.abspath(fname) +" 檔案不存在!! \n\n 請前往 https://github.com/stotiks/chia-plotter/releases 下載,放在此資料夾!\n")
+        text1.insert(INSERT,"\n 請查看指令的程式所在位置: \n "+cmdstr+" \n")
+        lblx.config(text="  ➠ 程式檢測到一些況狀,請排除...",bg="#604040")
         btn1.config(state=NORMAL)
 
 def checkCP():
     text1.delete(1.0,"end")
-    lblx.config(text="  >> 清除程式執行結果區,並清空變回預設值....",bg="#404040")
+    lblx.config(text="  ➠ 清除程式執行結果區,並清空變回預設值....",bg="#404040")
     etr1.delete(0,"end")
     etr1.insert(0,"1")
     etr2.delete(0,"end")
@@ -121,15 +150,15 @@ def checkCP():
 
 frm1 = Frame(win, width=640,height=480).pack()
 
-lbf1 = LabelFrame(frm1,text="= 顯示區 =")
-lbf2 = LabelFrame(frm1,text="= 輸入區 =")
-lbf3 = LabelFrame(frm1,text="= 進度區 =")
+lbf1 = LabelFrame(frm1,text="[顯示區]",font=fontsize)
+lbf2 = LabelFrame(frm1,text="[輸入區]",font=fontsize)
+lbf3 = LabelFrame(frm1,text="[進度區]",font=fontsize)
 
 lbf2.place(x=10,y=10,width=620,height=100)
 lbf1.place(x=10,y=110,width=620,height=300)
 lbf3.place(x=10,y=410,width=620,height=60)
 
-lab2 = Label(lbf1,text="........程式執行結果區.......")
+lab2 = Label(lbf1,text="........程式執行結果區.......",font=fontsize)
 lab2.pack()
 
 scroll = Scrollbar(lbf1)
@@ -201,7 +230,8 @@ btn3.place(x=425,y=52)
 btnX = Button(lbf2,text="顯示公鑰" ,command=ShowMeInfo)
 btnX.place(x=360,y=52)
 
-lblx = Label(lbf3,text=" >> 歡迎使用耕地指令工具...",bg="#404040",fg="white",width=84)
-lblx.place(x=10,y=7)
+
+lblx = Label(lbf3,text=" ➠ 歡迎使用耕地指令工具...",bg="#404040",fg="white",width=75,height=2,font=fontsize)
+lblx.place(x=4,y=1)
 
 win.mainloop()
