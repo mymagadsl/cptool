@@ -12,7 +12,7 @@ import tkinter.font as tkFont
 # ============================================
 # 應用程式設定
 # ============================================
-ToolVersion = "0.04"
+ToolVersion = "0.06"
 win = Tk() 
 win.title("== 高速耕地執行工具 == Ver "+ToolVersion)
 win.geometry("640x530")
@@ -26,7 +26,7 @@ os.chdir(cwd)
 startupinfo = subprocess.STARTUPINFO()
 startupinfo.dwFlags |= subprocess.STARTF_USESHOWWINDOW
 DEBUG = 0                           #除錯指令
-fontsize = tkFont.Font(size=11)     #字型尺寸
+fontsize = tkFont.Font(size=10)     #字型尺寸
 counter = 0                         #目前執行次數,不須更動
 fname = cwd+"\\chia_plot.exe"       #chia_plot 高速P圖程式的檔案名稱
 ChiaVer = "1.1.7"                   #安裝的Chia版本(查詢公鑰,礦池公鑰,農民公鑰需要)
@@ -85,8 +85,6 @@ def ShowMeInfo():
         text1.see(END)
 
 def RunCmd(CmdStr):
-    global counter
-    counter = 1
     btn1.config(state=DISABLED)
     btn2.config(state=DISABLED)
     btn3.config(state=DISABLED)
@@ -101,50 +99,54 @@ def RunCmd(CmdStr):
     with subprocess.Popen(CmdStr,startupinfo=startupinfo,shell=True,stdout=subprocess.PIPE, stderr=subprocess.PIPE, stdin=subprocess.PIPE) as p:
         LineStr = p.stdout.readline().decode("big5")
         lblx.config(text=" ➠ 耕地中,請稍後... ",bg="#802020")
-        sec = "0"
-        # 清除使用時間的顏色與資料
-        UseTime()
         while p.poll() == None and LineStr !="":
             text1.insert(INSERT,LineStr)
             LineStr = p.stdout.readline().decode("big5")
+            if LineStr.find("Process ID:") != -1:    # 清除上一次耕地紀錄
+                UseTime()
+                sec = "0"
             if LineStr.find("Plot Name:") != -1:    # 顯示目前耕地檔案名稱
                 LStr = LineStr.split()
-                etrxtext1.insert(0,LStr[2])
+                etrxtext1.insert(0,LStr[2]+".plot")
                 etrxtext1.config(bg="#602020")
             if LineStr.find("[P1]") != -1:
-                lblx.config(text=" ➠ 耕地中,第一階段... ",bg="#702020")
+                lblx.config(text=" ➠ 耕地中,第一階段... ",bg="#502020")
+                etrxtext2.config(bg="#702020")
             if LineStr.find("Phase 1 took") != -1:
                 LStr = LineStr.split()
                 etrxtext2.insert(0,LStr[3])
-                etrxtext2.config(bg="#702020")
+                etrxtext2.config(bg="#206020")
             if LineStr.find("[P2]") != -1:
-                lblx.config(text=" ➠ 耕地中,第二階段... ",bg="#752020")
+                lblx.config(text=" ➠ 耕地中,第二階段... ",bg="#602020")
+                etrxtext3.config(bg="#702020")
             if LineStr.find("Phase 2 took") != -1:
                 LStr = LineStr.split()
                 etrxtext3.insert(0,LStr[3])
-                etrxtext3.config(bg="#702020")
+                etrxtext3.config(bg="#206020")
             if LineStr.find("[P3-") != -1:
-                lblx.config(text=" ➠ 耕地中,第三階段... ",bg="#802525")
+                lblx.config(text=" ➠ 耕地中,第三階段... ",bg="#702525")
+                etrxtext4.config(bg="#702020")
             if LineStr.find("Phase 3 took") != -1:
                 LStr = LineStr.split()
                 etrxtext4.insert(0,LStr[3])
-                etrxtext4.config(bg="#702020")
+                etrxtext4.config(bg="#206020")
             if LineStr.find("[P4]") != -1:
                 lblx.config(text=" ➠ 耕地中,第四階段... ",bg="#803030")
+                etrxtext5.config(bg="#702020")
             if LineStr.find("Phase 4 took") != -1:
                 LStr = LineStr.split()
                 etrxtext5.insert(0,LStr[3])
-                etrxtext5.config(bg="#702020")
+                etrxtext5.config(bg="#206020")
             if LineStr.find("Total plot creation time was") != -1:
                 stra =  LineStr.split()
                 sec = str(round(float(stra[5])/60,1))
             if LineStr.find("Started copy to") != -1:
-                lblx.config(text=" ➠ 複製耕地往目標資料夾中...耕地總計時間: "+sec+" 分鐘",bg="#A03030")
-                etrxtext1.config(bg="#408040")
+                lblx.config(text=" ➠ 複製耕地往目標資料夾中,耕地總計時間: "+sec+" 分鐘",bg="#A03030")
+                etrxtext1.config(bg="#406040")
             text1.see(END)
     text1.insert(INSERT," ============================================================== \n")
-    lblx.config(text="   ➠ 耕地完成!耕地總計花費: "+sec+" 分鐘",bg="#408040")
-    text1.insert(INSERT,"   ➠ 耕地完成!耕地總計花費: "+sec+" 分鐘 \n")
+    lblx.config(text="   ➠ 耕地完成!最後耕地總計花費: "+sec+" 分鐘",bg="#408040")
+    text1.insert(INSERT,"   ➠ 耕地完成!最後耕地總計花費: "+sec+" 分鐘 \n")
     text1.see(END)
     btn1.config(state=NORMAL)
     btn2.config(state=NORMAL)
@@ -155,7 +157,7 @@ def RunCmd(CmdStr):
 def runme():
     global counter
     global fname
-    counter = 1
+    counter = 0
     cmdstr = os.path.abspath(fname) + " -n "+etr1.get()+" -r "+etr2.get()+" -u "+etr3.get()+" -t "+etr4.get()+" -2 "+etr5.get()+" -d "+etr8.get()+" -p "+etr6.get()+" -f "+etr7.get()
     if os.path.exists(fname) or DEBUG == 1:
         if etr1.get() == "" or etr2.get() == "" or etr3.get() == "" or etr4.get() == "" or etr5.get() == "" or etr6.get() == "" or etr7.get() == "" or etr8.get() == "":
@@ -235,8 +237,8 @@ lbf3.place(x=10,y=410,width=620,height=110)
 # ==============
 #  顯示區框架
 # ==============
-lab2 = Label(lbf1,text="程式執行結果區:",font=fontsize)
-lab2.place(x=0,y=-3)
+lab2 = Label(lbf1,text="程式執行結果區",font=fontsize)
+lab2.place(x=150,y=-3)
 
 lbver1 = Label(lbf1,text="請輸入你的Chia版本:")
 lbver1.place(x=419,y=-6)
@@ -255,54 +257,54 @@ scroll.config(command=text1.yview)
 # ==============
 #  輸入區設定格
 # ==============
-lb1 = Label(lbf2,text="耕地數:",font=fontsize)
-lb1.place(x=10,y=5)
+lb1 = Label(lbf2,text="耕地數",font=fontsize)
+lb1.place(x=8,y=5)
 etr1 = Entry(lbf2,bg="#606060",fg="white",width=6,justify=CENTER)
 etr1.place(x=55,y=6)
 lb1 = Label(lbf2,text="核心數",font=fontsize)
-lb1.place(x=110,y=5)
+lb1.place(x=108,y=5)
 etr2 = Entry(lbf2,bg="#606060",fg="white",width=6,justify=CENTER)
 etr2.place(x=155,y=6)
 lb1 = Label(lbf2,text="桶數量",font=fontsize)
-lb1.place(x=210,y=5)
+lb1.place(x=208,y=5)
 etr3 = Entry(lbf2,bg="#606060",fg="white",width=6,justify=CENTER)
 etr3.place(x=255,y=6)
 lb4 = Label(lbf2,text="暫存１",font=fontsize)
-lb4.place(x=310,y=5)
+lb4.place(x=308,y=5)
 etr4 = Entry(lbf2,bg="#606060",fg="white",width=15,justify=LEFT)
 etr4.place(x=350,y=6)
 lb5 = Label(lbf2,text="暫存２",font=fontsize)
-lb5.place(x=460,y=5)
+lb5.place(x=458,y=5)
 etr5 = Entry(lbf2,bg="#606060",fg="white",width=15,justify=LEFT)
 etr5.place(x=500,y=6)
 lb6 = Label(lbf2,text="礦池公鑰",font=fontsize)
-lb6.place(x=10,y=30)
+lb6.place(x=8,y=30)
 etr6 = Entry(lbf2,bg="#606060",fg="white",width=40,justify=LEFT)
-etr6.place(x=73,y=31)
+etr6.place(x=70,y=31)
 lb7 = Label(lbf2,text="農民公鑰",font=fontsize)
-lb7.place(x=10,y=55)
+lb7.place(x=8,y=55)
 etr7 = Entry(lbf2,bg="#606060",fg="white",width=40,justify=LEFT)
-etr7.place(x=73,y=56)
+etr7.place(x=70,y=56)
 lb8 = Label(lbf2,text="目標路徑",font=fontsize)
-lb8.place(x=360,y=30)
+lb8.place(x=358,y=30)
 etr8 = Entry(lbf2,bg="#606060",fg="white",width=27,justify=LEFT)
 etr8.place(x=416,y=31)
 # ==============
 #  輸入區按鈕集合
 # ==============
-btn1 = Button(lbf2,text="執行耕地",command=runme)
+btn1 = Button(lbf2,text="執行耕地",font=fontsize ,command=runme)
 btn1.place(x=480,y=52)
-btn2 = Button(lbf2,text="結束程式" ,command=ExitApp)
-btn2.place(x=550,y=52)
-btn3 = Button(lbf2,text="預設值" ,command=checkCP)
-btn3.place(x=425,y=52)
-btnX = Button(lbf2,text="顯示公鑰" ,command=ShowMeInfo)
+btn2 = Button(lbf2,text="結束程式",font=fontsize ,command=ExitApp)
+btn2.place(x=545,y=52)
+btn3 = Button(lbf2,text="預設值",font=fontsize ,command=checkCP)
+btn3.place(x=427,y=52)
+btnX = Button(lbf2,text="顯示公鑰",font=fontsize ,command=ShowMeInfo)
 btnX.place(x=360,y=52)
 
 # ==============
 #  進度區顯示框
 # ==============
-lblx = Label(lbf3,text=" ➠ 歡迎使用耕地指令工具...",bg="#404040",fg="white",width=75,height=2,font=fontsize)
+lblx = Label(lbf3,text=" ➠ 歡迎使用耕地指令工具...",bg="#404040",fg="white",width=75,height=2,font=tkFont.Font(size=11))
 lblx.place(x=4,y=50)
 lblxpn = Label(lbf3,text="目前耕地")
 lblxpn.place(x=4,y=0)
@@ -349,8 +351,8 @@ text1.insert(INSERT,"   ➠ 作者: mymag (mymag_20@msn.com) \n")
 text1.insert(INSERT,"   ➠ 網頁: http://fgc.tw \n")
 text1.insert(INSERT,"   ➠ 版本: "+ToolVersion+" \n")
 text1.insert(INSERT,"   ➠ 程式工作目錄: "+cwd+"\n")
-text1.insert(INSERT,"   ➠ 捐贈(chia): xch1vk3tcw89xtk6uqzgxuyssuwm9s4dsklnaa00hyppevxlg9tpulys98erd4 \n")
-text1.insert(INSERT,"   ➠ 捐贈(btc): xch1vk3tcw89xtk6uqzgxuyssuwm9s4dsklnaa00hyppevxlg9tpulys98erd4 \n")
+text1.insert(INSERT,"   ➠ 捐贈(Chia XCH): xch1vk3tcw89xtk6uqzgxuyssuwm9s4dsklnaa00hyppevxlg9tpulys98erd4 \n")
+text1.insert(INSERT,"   ➠ 捐贈(BTC-Bitcoin): 33gxYWhbp5MsSfsrH5J5dr2dmmbhZdFApq \n")
 text1.insert(INSERT," ============================================================== \n")
 
 win.mainloop()
