@@ -14,7 +14,7 @@ import tkinter.messagebox as tkMsg
 # ============================================
 # 應用程式設定
 # ============================================
-ToolVersion = "0.07"
+ToolVersion = "0.08"
 win = Tk() 
 win.title("➠ 高速耕地執行工具 ➠ Ver "+ToolVersion)
 win.geometry("640x530")
@@ -58,6 +58,21 @@ def UseTime():  # 清除進度區資料
     etrxtext3.config(bg="#C0C0C0")
     etrxtext4.config(bg="#C0C0C0")
     etrxtext5.config(bg="#C0C0C0")
+# ============================================
+def CheckDir(temp1,temp2,target1):  # 檢查是否忘了加上斜線
+    if temp1[-1] != "\\":
+        temp1 = temp1+"\\"
+        etr4.delete(0,"end")
+        etr4.insert(0,temp1)
+    if temp2[-1] != "\\":
+        temp2 = temp2+"\\"
+        etr5.delete(0,"end")
+        etr5.insert(0,temp2)
+    if target1[-1] != "\\":
+        target1 = target1+"\\"
+        etr8.delete(0,"end")
+        etr8.insert(0,target1)
+    return temp1,temp2,target1
 # ============================================
 def ShowMeInfo():   # 顯示並填入公鑰資訊
     LocalStr = os.getenv("LOCALAPPDATA")
@@ -117,9 +132,6 @@ def ShowMeInfo():   # 顯示並填入公鑰資訊
         text1.insert(INSERT,"  ➠ Chia主程式不存在...\n")
         lblx.config(text="  ➠ Chia主程式不存在...",bg="#404070")
         text1.see(END)
-
-def new_func():
-    Message()
 # ============================================
 def RunCmd(CmdStr): # 執行指令
     global sec
@@ -199,25 +211,49 @@ def RunChiaPlot():    # 執行耕地
     global counter
     global fname
     counter = 0
-    cmdstr = os.path.abspath(fname) + " -n "+etr1.get()+" -r "+etr2.get()+" -u "+etr3.get()+" -t "+etr4.get()+" -2 "+etr5.get()+" -d "+etr8.get()+" -p "+ppkComboBox.get()+" -f "+fpkComboBox.get()
+    err = 0
+    #檢查路徑是否正常
+    if not os.path.isdir(etr4.get()) or not os.path.isdir(etr5.get()) or not os.path.isdir(etr8.get()):
+        err=1
+    else:
+        #檢查是否少了斜線
+        temp1,temp2,target1 = CheckDir(etr4.get(),etr5.get(),etr8.get())
+    if not str.isdigit(etr1.get()) or not str.isdigit(etr2.get()) or not str.isdigit(etr3.get()):
+        err=2
+    #組合外部指令
+    if err == 0:
+        cmdstr = os.path.abspath(fname) + " -n "+etr1.get()+" -r "+etr2.get()+" -u "+etr3.get()+" -t "+temp1+" -2 "+temp2+" -d "+target1+" -p "+ppkComboBox.get()+" -f "+fpkComboBox.get()
     if os.path.exists(fname) or CP_DEBUG == 1:
         if etr1.get() == "" or etr2.get() == "" or etr3.get() == "" or etr4.get() == "" or etr5.get() == "" or ppkComboBox.get() == "" or fpkComboBox.get() == "" or etr8.get() == "":
             text1.delete(1.0,"end")
+            text1.insert(INSERT," ============================================================== \n")
             text1.insert(INSERT,"   ➠ 設定框有遺漏輸入設定...... \n")
             lblx.config(text="  ➠ 設定框內必須有輸入文字....",bg="#604040")
         else:
-            counter += 1
-            text1.delete(1.0,"end")
-            text1.insert(INSERT," ============================================================== \n")
-            text1.insert(INSERT,"      第 "+str(counter)+" 次耕地執行中,請稍後!!\n")
-            text1.insert(INSERT," ============================================================== \n")
-            text1.insert(INSERT,"  "+cmdstr+"\n")
-            text1.insert(INSERT," ============================================================== \n")
-            text1.insert(INSERT,"   ➠ 耕地開始,請稍後...... \n")
-            lblx.config(text="  ➠ 耕地開始,請稍後....")
             # 開一個執行緒
-            t1 = threading.Thread(target=RunCmd,args=(cmdstr,))
-            t1.start()
+            if err == 1:
+                text1.delete(1.0,"end")
+                text1.insert(INSERT," ============================================================== \n")
+                text1.insert(INSERT,"   ➠ 暫存1,暫存2,或目標目錄其中有目錄是不存在! \n")
+                lblx.config(text="  ➠ 資料夾不存在所以停止耕地....",bg="#202080")
+            elif err == 2:
+                text1.delete(1.0,"end")
+                text1.insert(INSERT," ============================================================== \n")
+                text1.insert(INSERT,"   ➠ 耕地數,核心數,桶數量,有格子內輸入不是數字的文字! \n")
+                lblx.config(text="  ➠ 有格子內輸入不是數字的文字所以停止耕地....",bg="#202080")
+            else:
+                counter += 1
+                text1.delete(1.0,"end")
+                text1.insert(INSERT," ============================================================== \n")
+                text1.insert(INSERT,"      第 "+str(counter)+" 次耕地執行中,請稍後!!\n")
+                text1.insert(INSERT," ============================================================== \n")
+                text1.insert(INSERT,"  "+cmdstr+"\n")
+                text1.insert(INSERT," ============================================================== \n")
+                text1.insert(INSERT,"   ➠ 耕地開始,請稍後...... \n")
+                lblx.config(text="  ➠ 耕地開始,請稍後....")
+                t1 = threading.Thread(target=RunCmd,args=(cmdstr,))
+                t1.start()
+        print(err)
     else:
         text1.delete(1.0,"end")
         text1.insert(INSERT," ============================================================== \n")
