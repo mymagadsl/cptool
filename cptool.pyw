@@ -6,7 +6,6 @@
 # ============================================
 from tkinter import *
 import os,sys
-import signal
 import time
 import subprocess
 import threading
@@ -16,7 +15,7 @@ import tkinter.messagebox as tkMsg
 # ============================================
 # 應用程式設定
 # ============================================
-ToolVersion = "0.10"                #程式版本
+ToolVersion = "0.11"                #程式版本
 win = Tk()                          #宣告視窗
 win.title("➠ 高速耕地執行工具 ➠ Ver "+ToolVersion)
 win.geometry("640x530")
@@ -402,14 +401,19 @@ def DeleteTemp1Temp2File():
 # TODO: 檢查資料夾是否有暫存檔案
 def CheckDirList():
     TempDir1List = etr4.get()
-    TempDir2List = etr5.get()
-    Files=os.listdir(TempDir1List)
-    for f in range(len(Files)):
-        Files[f]=os.path.splitext(Files[f])[1]
-    Str='.tmp'
-    if Str in Files:
-        return True
-    else:
+    try:
+        if not os.path.exists(TempDir1List):
+            return False
+        else:
+            Files=os.listdir(TempDir1List)
+        for f in range(len(Files)):
+            Files[f]=os.path.splitext(Files[f])[1]
+        Str='.tmp'
+        if Str in Files:
+            return True
+        else:
+            return False
+    except:
         return False
 # ==============
 #  TODO: 視窗主框架
