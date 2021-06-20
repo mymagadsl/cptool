@@ -13,10 +13,11 @@ import threading
 import tkinter.font as tkFont
 import tkinter.ttk as ttk
 import tkinter.messagebox as tkMsg
+from idlelib.tooltip import Hovertip
 # ============================================
 # 應用程式設定
 # ============================================
-ToolVersion = "0.20"                #程式版本
+ToolVersion = "0.22"                #程式版本
 win = Tk()                          #宣告視窗
 win.title("➠ 高速耕地執行工具 ➠ Ver "+ToolVersion)
 win.geometry("740x530")
@@ -27,7 +28,7 @@ os.chdir(cwd)
 # ============================================
 # 變數設定,請勿更動
 # ============================================
-CP_DEBUG = TRUE                     #除錯指令
+CP_DEBUG = FALSE                     #除錯指令
 counter = 0                         #目前執行次數,不須更動
 sec = 0                             #目前階段執行時間,不須更動
 cp_delay = 0                        #減少資源占用
@@ -51,6 +52,8 @@ TempDir2 = "D:\\CHIATEMP\\"         #耕地使用的暫存資料夾2(作者建�
 TargetDir = "E:\\CHIA\\"            #耕地完成檔案放置位置
 PoolPublicKey = ""                  #礦池公鑰,請按顯示公鑰查詢
 FarmerPublicKey = ""                #農民公鑰,請按顯示公鑰查詢
+chkValue = BooleanVar()
+chkValue.set(False)                 #-G 核取方塊,預設值 FALSE
 # ============================================
 # TODO: 清除進度區資料
 def UseTime():  
@@ -165,6 +168,7 @@ def RunCmd(CmdStr):
     etr1.config(state=DISABLED)
     etr2.config(state=DISABLED)
     etr3.config(state=DISABLED)
+    etr34.config(state=DISABLED)
     etr4.config(state=DISABLED)
     etr5.config(state=DISABLED)
     etr8.config(state=DISABLED)
@@ -182,7 +186,7 @@ def RunCmd(CmdStr):
         while p.poll() == None:
             # 輸出執行LOG
             LineStr = p.stdout.readline().decode("big5")
-            text1.insert(END,END,LineStr)
+            text1.insert(END,LineStr)
             # 判斷過程執行功能
             if "Process ID:" in LineStr:    # 清除上一次耕地紀錄
                 LStr = LineStr.split()
@@ -259,6 +263,7 @@ def RunCmd(CmdStr):
     etr1.config(state=NORMAL)
     etr2.config(state=NORMAL)
     etr3.config(state=NORMAL)
+    etr34.config(state=NORMAL)
     etr4.config(state=NORMAL)
     etr5.config(state=NORMAL)
     etr8.config(state=NORMAL)
@@ -272,20 +277,20 @@ def RunChiaPlot():
     global fname
     counter = 0
     err = 0
+    global chkValue
     # err 的錯誤代碼表
     # 1=路徑不存在 2=前三格不是數字 3=路徑有空格 5=全部輸入格其中有沒輸入的
     # 99=檢查是否DEBUG或是chia_plot是否不存在
-    #檢查是否少了斜線
     temp1,temp2,target1 = CheckDir(etr4.get(),etr5.get(),etr8.get())
-    if etr1.get() == "" or etr2.get() == "" or etr3.get() == "" or etr4.get() == "" or etr5.get() == "" or ppkComboBox.get() == "" or fpkComboBox.get() == "" or etr8.get() == "":
-        err = 5
     # 檢查前兩格是否為數字
-    if not str.isdigit(etr2.get()) or not str.isdigit(etr3.get()):
+    if not str.isdigit(etr2.get()) or not str.isdigit(etr3.get()) or not str.isdigit(etr34.get()):
         err = 2
     # 檢查耕地數是否為數字
     if not str.isdigit(etr1.get()):
         if not str("-1"):   # 確定不是 -1
             err = 2
+    if len(etr1.get()) == 0 or len(etr2.get()) == 0 or len(etr3.get())==0 or len(etr34.get())==0 or len(temp1) == 0 or len(temp2) == 0 or len(ppkComboBox.get()) == 0 or len(fpkComboBox.get()) == 0 or len(target1) == 0:
+        err = 5
     #檢查路徑是否存在
     if not os.path.isdir(temp1) or not os.path.isdir(temp2) or not os.path.isdir(etr8.get()):
         err = 1
@@ -295,12 +300,18 @@ def RunChiaPlot():
     #檢查 madMAx43v3r/chia-plotter的 chia_plot.exe 是否存在或是使用除錯指令
     if not os.path.exists(fname):
         err = 99
-    if CP_DEBUG == 1:
+    if CP_DEBUG:
         err = 0
     # 組合外部指令
-    cmdstr = "\"" + os.path.abspath(fname) + "\" -n "+etr1.get()+" -r "+etr2.get()+" -u "+etr3.get()+" -t "+temp1+" -2 "+temp2+" -d "+target1+" -p "+ppkComboBox.get()+" -f "+fpkComboBox.get()
+    cmdstr = "\"" + os.path.abspath(fname) + "\" -n "+etr1.get()+" -r "+etr2.get()+" -u "+etr3.get()
+    if etr3.get() != etr34.get():
+        cmdstr =cmdstr +" -v "+etr34.get()
+    if chkValue.get():
+        cmdstr =cmdstr +" -G "
+    cmdstr = cmdstr+" -t "+temp1+" -2 "+temp2+" -d "+target1+" -p "+ppkComboBox.get()+" -f "+fpkComboBox.get()
     #開始檢測後執行
     text1.delete(1.0,END)
+    text1.insert(END,"   ➠ 錯誤代碼 ERR = "+str(err)+"\n")
     text1.insert(END," ============================================================== \n")
     if err == 0:
         counter += 1
@@ -318,7 +329,7 @@ def RunChiaPlot():
         text1.insert(END,"   ➠ 暫存1,暫存2,或目標目錄其中有目錄是不存在! \n")
         lblx.config(text="  ➠ 資料夾不存在所以停止耕地....",bg="#F02080")
     elif err == 2:
-        text1.insert(END,"   ➠ 耕地數,核心數,桶數量,有格子內輸入不是數字的文字! \n")
+        text1.insert(END,"   ➠ 耕地數,核心數,桶數量,3-4桶,有格子內輸入不是數字的文字! \n")
         lblx.config(text="  ➠ 有格子內輸入不是數字的文字所以停止耕地....",bg="#F02080")
     elif err == 3:
         text1.insert(END,"   ➠ 暫存1,暫存2,或目標目錄中有空格! \n   ➠ madMAx43v3r/chia-plotter 不支援有空格的資料夾,請修正!\n")
@@ -346,6 +357,8 @@ def BackDefault():
     etr2.insert(0,CoreNum)
     etr3.delete(0,END)
     etr3.insert(0,BuketNum)
+    etr34.delete(0,END)
+    etr34.insert(0,BuketNum)
     etr4.delete(0,END)
     etr4.insert(0,TempDir1)
     etr5.delete(0,END)
@@ -436,11 +449,11 @@ def CheckDirList():
     except:
         return False
 # ============================================
-#  TODO: 視窗主框架
+# TODO: 視窗主框架
 # ============================================
 frm1 = Frame(win, width=745,height=530).pack()
 # ============================================
-#  TODO: 視窗分區框架
+# TODO: 視窗分區框架
 # ============================================
 lbf2 = LabelFrame(frm1,text="[輸入區]",font=fontsize)
 lbf1 = LabelFrame(frm1,text="[顯示區]",font=fontsize)
@@ -451,7 +464,7 @@ lbf1.place(x=10,y=110,width=620,height=300)
 lbf3.place(x=10,y=410,width=620,height=110)
 lbf4.place(x=635,y=110,width=100,height=410)
 # ============================================
-#  TODO: 顯示區框架
+# TODO: 顯示區框架
 # ============================================
 lab2 = Label(lbf1,text="程式執行結果區",font=fontsize)
 lab2.place(x=150,y=-3)
@@ -460,7 +473,7 @@ lbver1.place(x=419,y=-6)
 etrver1 = Entry(lbf1,width=8,bg="#303030",fg="white",justify=CENTER)
 etrver1.place(x=538,y=-4)
 # ============================================
-#  TODO: 顯示區內文框
+# TODO: 顯示區內文框
 # ============================================
 scroll = Scrollbar(lbf1)
 scroll.pack(side=RIGHT , fill=Y)
@@ -468,32 +481,42 @@ text1 = Text(lbf1,width=85,height=20,bg="#303030",fg="white", yscrollcommand=scr
 text1.place(x=0,y=16)
 scroll.config(command=text1.yview)
 # ============================================
-#  TODO: 創建輸入區設定格
+# TODO: 創建輸入區設定格
 # ============================================
 lb1 = Label(lbf2,text="耕地數",font=fontsize)
 lb1.place(x=4,y=5)
-etr1 = Entry(lbf2,bg="#606060",fg="white",width=6,justify=CENTER)
-etr1.place(x=55,y=6)
-lb1 = Label(lbf2,text="核心數",font=fontsize)
-lb1.place(x=108,y=5)
-etr2 = Entry(lbf2,bg="#606060",fg="white",width=6,justify=CENTER)
-etr2.place(x=155,y=6)
+etr1 = Entry(lbf2,bg="#606060",fg="white",width=4,justify=CENTER)
+etr1.place(x=48,y=6)
+lb1 = Label(lbf2,text="執行緒",font=fontsize)
+lb1.place(x=82,y=5)
+etr2 = Entry(lbf2,bg="#606060",fg="white",width=4,justify=CENTER)
+etr2.place(x=128,y=6)
 lb1 = Label(lbf2,text="桶數量",font=fontsize)
-lb1.place(x=208,y=5)
-etr3 = Entry(lbf2,bg="#606060",fg="white",width=6,justify=CENTER)
-etr3.place(x=255,y=6)
+lb1.place(x=161,y=5)
+etr3 = Entry(lbf2,bg="#606060",fg="white",width=5,justify=CENTER)
+etr3.place(x=205,y=6)
 lb4 = Label(lbf2,text="暫存１",font=fontsize)
-lb4.place(x=313,y=5)
+lb4.place(x=325,y=5)
 etr4 = Entry(lbf2,bg="#606060",fg="white",width=20,justify=LEFT)
-etr4.place(x=360,y=6)
+etr4.place(x=372,y=6)
 lb5 = Label(lbf2,text="暫存２",font=fontsize)
-lb5.place(x=513,y=5)
+lb5.place(x=521,y=5)
 etr5 = Entry(lbf2,bg="#606060",fg="white",width=20,justify=LEFT)
-etr5.place(x=560,y=6)
+etr5.place(x=568,y=6)
 lb8 = Label(lbf2,text="最終路徑",font=fontsize)
 lb8.place(x=358,y=30)
 etr8 = Entry(lbf2,bg="#606060",fg="white",width=32,justify=LEFT)
 etr8.place(x=419,y=31)
+
+cbG = Checkbutton(lbf2, text="暫存切換", variable=chkValue)
+cbG.place(x=641,y=29)
+cbGTip = Hovertip(cbG,'進階功能: 非必要,確定要使用才打勾,不懂不要打勾!')
+
+lb34 = Label(lbf2,text="3-4桶",font=fontsize)
+lb34.place(x=245,y=5)
+etr34 = Entry(lbf2,bg="#606060",fg="#A0A0A0",width=5,justify=CENTER)
+etr34.place(x=280,y=6)
+etr34Tip = Hovertip(etr34,'進階功能: 非必要,這是設定第三與第四階段的桶數,預設值與桶數量相同')
 
 lb6 = Label(lbf2,text="礦池公鑰",font=fontsize)
 lb6.place(x=4,y=57)
@@ -505,18 +528,18 @@ lb7.place(x=4,y=31)
 fpkComboBox = ttk.Combobox(width=39,justify=LEFT)
 fpkComboBox.place(x=74,y=55)
 # ============================================
-#  TODO: 創建輸入區按鈕集合
+# TODO: 創建輸入區按鈕集合
 # ============================================
 btn1 = Button(lbf2,text="執行耕地",font=fontsize,fg="#0000FF",width=9,command=RunChiaPlot)
 btn1.place(x=574,y=55)
-btn2 = Button(lbf2,text="結束\n程式",font=fontsize,fg="#743A3A",width=7,height=3 ,command=ExitApp)
-btn2.place(x=652,y=30)
+btn2 = Button(lbf2,text="結束程式",font=fontsize,fg="#743A3A",width=7,command=ExitApp)
+btn2.place(x=652,y=55)
 btn3 = Button(lbf2,text="預設值",font=fontsize ,command=BackDefault)
 btn3.place(x=519,y=55)
 btnX = Button(lbf2,text="顯示公鑰並自動填入選單",font=fontsize,fg="#4B0091",command=ShowMeInfo)
 btnX.place(x=360,y=55)
 # ============================================
-#  TODO: 創建進度區顯示框
+# TODO: 創建進度區顯示框
 # ============================================
 lblx = Label(lbf3,text=" ➠ 歡迎使用耕地指令工具 Ver "+ToolVersion,bg="#202020",fg="white",width=65,height=2,font=tkFont.Font(size=11))
 lblx.place(x=44,y=50)
@@ -547,7 +570,7 @@ lblxpn4.place(x=460,y=25)
 etrxtext5 = Entry(lbf3,bg="#C0C0C0",fg="white",width=9,justify=LEFT)
 etrxtext5.place(x=543,y=27)
 # ============================================
-#  TODO: 創建紀錄區顯示框
+# TODO: 創建紀錄區顯示框
 # ============================================
 scroll2 = Scrollbar(lbf4)
 scroll2.pack(side=RIGHT , fill=Y)
@@ -555,7 +578,7 @@ text2 = Text(lbf4,width=11,height=29,bg="#303030",fg="white",yscrollcommand=scro
 text2.place(x=1,y=10)
 scroll2.config(command=text2.yview)
 # ============================================
-#  TODO: 啟動時讀取設定檔案
+# TODO: 啟動時讀取設定檔案
 # ============================================
 SFileName = cwd+"\\cptool.ini"
 if os.path.exists(SFileName):
@@ -564,6 +587,7 @@ if os.path.exists(SFileName):
     etr1.insert(0,list1[0].replace("\n",""))    #讀取時消除換行字元
     etr2.insert(0,list1[1].replace("\n",""))
     etr3.insert(0,list1[2].replace("\n",""))
+    etr34.insert(0,list1[2].replace("\n",""))   #將34桶的開機值與桶相同
     etr4.insert(0,list1[3].replace("\n",""))
     etr5.insert(0,list1[4].replace("\n",""))
     # 礦池公鑰|農民公鑰|清除換行字元
