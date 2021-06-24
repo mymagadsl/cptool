@@ -20,4 +20,5 @@
     2.原始碼使用方法 (如此你有安裝python用這方法更快)
         有安裝python的情況下直接點兩下 cptool.pyw 執行即可
     
-![cptool_0 08](https://user-images.githubusercontent.com/6682942/122075671-d73e4f80-ce2c-11eb-81f3-80b433f224bc.png)
+![cptool](https://user-images.githubusercontent.com/6682942/123346065-03bf3d80-d58a-11eb-8fd5-dbffcafc6aa8.png)
+
