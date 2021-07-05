@@ -1,3 +1,7 @@
+版本:0.30
+1. A 支援 madMAx43v3r/chia-plotter build for windows v0.1.1
+2. A 支援 -c 參數, 礦池合約地址.
+3. A 支援 -w 參數, 等待複製的時候先行啟動下一個耕地
 版本:0.22
 1. A 支援 madMAx43v3r/chia-plotter build for windows v0.0.6
 2. A 支援 -v 參數, 設定第三,第四階段使用多少桶數

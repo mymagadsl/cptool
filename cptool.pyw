@@ -17,10 +17,10 @@ from idlelib.tooltip import Hovertip
 # ============================================
 # 應用程式設定
 # ============================================
-ToolVersion = "0.22"                #程式版本
+ToolVersion = "0.30"                #程式版本
 win = Tk()                          #宣告視窗
 win.title("➠ 高速耕地執行工具 ➠ Ver "+ToolVersion)
-win.geometry("740x530")
+win.geometry("740x580")
 win.resizable(False, False)
 # 將工作目錄切換至執行檔案所在目錄
 cwd = os.path.dirname(os.path.realpath(sys.argv[0]))
@@ -53,6 +53,8 @@ TargetDir = "E:\\CHIA\\"            #耕地完成檔案放置位置
 PoolPublicKey = ""                  #礦池公鑰,請按顯示公鑰查詢
 FarmerPublicKey = ""                #農民公鑰,請按顯示公鑰查詢
 chkValue = BooleanVar()
+chkValue.set(False)                 #-G 核取方塊,預設值 FALSE
+chkValueW = BooleanVar()
 chkValue.set(False)                 #-G 核取方塊,預設值 FALSE
 # ============================================
 # TODO: 清除進度區資料
@@ -232,8 +234,9 @@ def RunCmd(CmdStr):
                 sec = str(round(float(stra[5])/60,1))
                 cp_Num += 1
             if "Started copy to" in LineStr:
-                lblx.config(text=" ➠ 複製耕地往目標資料夾中,耕地總計時間: "+str(sec)+" 分鐘",bg="#A03030")
-                etrxtext1.config(bg="#408040")
+                if not chkValueW.get():
+                    lblx.config(text=" ➠ 複製耕地往目標資料夾中,耕地總計時間: "+str(sec)+" 分鐘",bg="#A03030")
+                    etrxtext1.config(bg="#408040")
                 cp_delay = 0
                 text2.insert(END,str(cp_Num)+"/"+cp_NumEnd,"tag1")
                 text2.insert(END,":")
@@ -307,8 +310,12 @@ def RunChiaPlot():
     if etr3.get() != etr34.get():
         cmdstr =cmdstr +" -v "+etr34.get()
     if chkValue.get():
-        cmdstr =cmdstr +" -G "
+        cmdstr =cmdstr +" -G"
+    if chkValueW.get():
+        cmdstr =cmdstr +" -w"
     cmdstr = cmdstr+" -t "+temp1+" -2 "+temp2+" -d "+target1+" -p "+ppkComboBox.get()+" -f "+fpkComboBox.get()
+    if len(etrPool.get()) == 64:
+        cmdstr = cmdset+" -c "+ etrPool.get()
     #開始檢測後執行
     text1.delete(1.0,END)
     text1.insert(END,"   ➠ 錯誤代碼 ERR = "+str(err)+"\n")
@@ -317,7 +324,10 @@ def RunChiaPlot():
         counter += 1
         text1.insert(END,"      第 "+str(counter)+" 次耕地執行中,請稍後!!\n")
         text1.insert(END," ============================================================== \n")
+        text1.insert(END,"   ➠ 目前工作目錄: "+os.getcwd()+"\n")
+        text1.insert(END," ============================================================== \n")
         text1.insert(END,"  "+cmdstr+"\n")
+        text1.insert(END," ============================================================== \n")
         text1.insert(END,"   ➠ 耕地開始,請稍後...... \n")
         lblx.config(text="  ➠ 耕地開始,請稍後....")
         t1 = threading.Thread(target=RunCmd,args=(cmdstr,))
@@ -459,10 +469,10 @@ lbf2 = LabelFrame(frm1,text="[輸入區]",font=fontsize)
 lbf1 = LabelFrame(frm1,text="[顯示區]",font=fontsize)
 lbf3 = LabelFrame(frm1,text="[進度區]",font=fontsize)
 lbf4 = LabelFrame(frm1,text="[紀錄區]",font=fontsize)
-lbf2.place(x=10,y=10,width=725,height=100)
-lbf1.place(x=10,y=110,width=620,height=300)
-lbf3.place(x=10,y=410,width=620,height=110)
-lbf4.place(x=635,y=110,width=100,height=410)
+lbf2.place(x=10,y=10,width=725,height=145)
+lbf1.place(x=10,y=160,width=620,height=300)
+lbf3.place(x=10,y=460,width=620,height=110)
+lbf4.place(x=635,y=160,width=100,height=410)
 # ============================================
 # TODO: 顯示區框架
 # ============================================
@@ -505,11 +515,15 @@ etr5 = Entry(lbf2,bg="#606060",fg="white",width=20,justify=LEFT)
 etr5.place(x=568,y=6)
 lb8 = Label(lbf2,text="最終路徑",font=fontsize)
 lb8.place(x=358,y=30)
-etr8 = Entry(lbf2,bg="#606060",fg="white",width=32,justify=LEFT)
+etr8 = Entry(lbf2,bg="#606060",fg="white",width=41,justify=LEFT)
 etr8.place(x=419,y=31)
 
+cbW = Checkbutton(lbf2, text="等待複製時啟動下一個耕地", variable=chkValueW)
+cbW.place(x=375,y=55)
+cbWTip = Hovertip(cbW,'進階功能: 非必要,確定要使用才打勾,不懂不要打勾!')
+
 cbG = Checkbutton(lbf2, text="暫存切換", variable=chkValue)
-cbG.place(x=641,y=29)
+cbG.place(x=560,y=55)
 cbGTip = Hovertip(cbG,'進階功能: 非必要,確定要使用才打勾,不懂不要打勾!')
 
 lb34 = Label(lbf2,text="3-4桶",font=fontsize)
@@ -527,17 +541,23 @@ lb7 = Label(lbf2,text="農民公鑰",font=fontsize)
 lb7.place(x=4,y=31)
 fpkComboBox = ttk.Combobox(width=39,justify=LEFT)
 fpkComboBox.place(x=74,y=55)
+
+lbPool = Label(lbf2,text="礦池合約地址:(輸入不等於64個字元會自動省略此參數)",font=fontsize,fg="#FF6060")
+lbPool.place(x=4,y=81)
+etrPool = Entry(lbf2,bg="#606060",fg="white",width=49,justify=LEFT)
+etrPool.place(x=7,y=101)
+etrPoolTip = Hovertip(etrPool,'進階功能: 如果沒用到,不要輸入任何東西,輸入不等於64個字元會省略此參數')
 # ============================================
 # TODO: 創建輸入區按鈕集合
 # ============================================
-btn1 = Button(lbf2,text="執行耕地",font=fontsize,fg="#0000FF",width=9,command=RunChiaPlot)
-btn1.place(x=574,y=55)
-btn2 = Button(lbf2,text="結束程式",font=fontsize,fg="#743A3A",width=7,command=ExitApp)
-btn2.place(x=652,y=55)
-btn3 = Button(lbf2,text="預設值",font=fontsize ,command=BackDefault)
-btn3.place(x=519,y=55)
-btnX = Button(lbf2,text="顯示公鑰並自動填入選單",font=fontsize,fg="#4B0091",command=ShowMeInfo)
-btnX.place(x=360,y=55)
+btn1 = Button(lbf2,text="執行耕地",font=fontsize,fg="#0000FF",width=9,height=2,command=RunChiaPlot)
+btn1.place(x=574,y=85)
+btn2 = Button(lbf2,text="結束程式",font=fontsize,fg="#743A3A",width=7,height=2,command=ExitApp)
+btn2.place(x=652,y=85)
+btn3 = Button(lbf2,text="預設值",font=fontsize ,height=2,command=BackDefault)
+btn3.place(x=519,y=85)
+btnX = Button(lbf2,text="顯示公鑰並自動填入選單",font=fontsize,fg="#4B0091",height=2,command=ShowMeInfo)
+btnX.place(x=360,y=85)
 # ============================================
 # TODO: 創建進度區顯示框
 # ============================================
