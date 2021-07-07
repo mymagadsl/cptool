@@ -17,7 +17,7 @@ from idlelib.tooltip import Hovertip
 # ============================================
 # 應用程式設定
 # ============================================
-ToolVersion = "0.30"                #程式版本
+ToolVersion = "0.31"                #程式版本
 win = Tk()                          #宣告視窗
 win.title("➠ 高速耕地執行工具 ➠ Ver "+ToolVersion)
 win.geometry("740x580")
@@ -314,7 +314,7 @@ def RunChiaPlot():
     if chkValueW.get():
         cmdstr =cmdstr +" -w"
     cmdstr = cmdstr+" -t "+temp1+" -2 "+temp2+" -d "+target1+" -p "+ppkComboBox.get()+" -f "+fpkComboBox.get()
-    if len(etrPool.get()) == 64:
+    if etrPool.get()[0:2] == "xch":
         cmdstr = cmdset+" -c "+ etrPool.get()
     #開始檢測後執行
     text1.delete(1.0,END)
@@ -542,11 +542,11 @@ lb7.place(x=4,y=31)
 fpkComboBox = ttk.Combobox(width=39,justify=LEFT)
 fpkComboBox.place(x=74,y=55)
 
-lbPool = Label(lbf2,text="礦池合約地址:(輸入不等於64個字元會自動省略此參數)",font=fontsize,fg="#FF6060")
+lbPool = Label(lbf2,text="礦池合約地址:(輸入前三碼非xch字元會自動省略此參數)",font=fontsize,fg="#FF6060")
 lbPool.place(x=4,y=81)
 etrPool = Entry(lbf2,bg="#606060",fg="white",width=49,justify=LEFT)
 etrPool.place(x=7,y=101)
-etrPoolTip = Hovertip(etrPool,'進階功能: 如果沒用到,不要輸入任何東西,輸入不等於64個字元會省略此參數')
+etrPoolTip = Hovertip(etrPool,'進階功能: 如果沒用到,不要輸入任何東西,輸入前三碼非xch字元會省略此參數')
 # ============================================
 # TODO: 創建輸入區按鈕集合
 # ============================================
