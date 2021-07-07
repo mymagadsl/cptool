@@ -17,7 +17,7 @@ from idlelib.tooltip import Hovertip
 # ============================================
 # 應用程式設定
 # ============================================
-ToolVersion = "0.31"                #程式版本
+ToolVersion = "0.32"                #程式版本
 win = Tk()                          #宣告視窗
 win.title("➠ 高速耕地執行工具 ➠ Ver "+ToolVersion)
 win.geometry("740x580")
@@ -292,7 +292,7 @@ def RunChiaPlot():
     if not str.isdigit(etr1.get()):
         if not str("-1"):   # 確定不是 -1
             err = 2
-    if len(etr1.get()) == 0 or len(etr2.get()) == 0 or len(etr3.get())==0 or len(etr34.get())==0 or len(temp1) == 0 or len(temp2) == 0 or len(ppkComboBox.get()) == 0 or len(fpkComboBox.get()) == 0 or len(target1) == 0:
+    if len(etr1.get()) == 0 or len(etr2.get()) == 0 or len(etr3.get())==0 or len(etr34.get())==0 or len(temp1) == 0 or len(temp2) == 0 or len(fpkComboBox.get()) == 0 or len(target1) == 0:
         err = 5
     #檢查路徑是否存在
     if not os.path.isdir(temp1) or not os.path.isdir(temp2) or not os.path.isdir(etr8.get()):
@@ -313,9 +313,14 @@ def RunChiaPlot():
         cmdstr =cmdstr +" -G"
     if chkValueW.get():
         cmdstr =cmdstr +" -w"
-    cmdstr = cmdstr+" -t "+temp1+" -2 "+temp2+" -d "+target1+" -p "+ppkComboBox.get()+" -f "+fpkComboBox.get()
-    if etrPool.get()[0:2] == "xch":
-        cmdstr = cmdset+" -c "+ etrPool.get()
+    cmdstr = cmdstr + " -t " + temp1 + " -2 " + temp2 + " -d " + target1
+    if len(ppkComboBox.get()) == 0 and not etrPool.get()[0:3] == "xch":
+        err = 6
+    if etrPool.get()[0:3] == "xch":
+        cmdstr = cmdstr + " -c " + etrPool.get()
+    else:
+        cmdstr = cmdstr + " -p " + ppkComboBox.get()
+    cmdstr = cmdstr + " -f " + fpkComboBox.get()
     #開始檢測後執行
     text1.delete(1.0,END)
     text1.insert(END,"   ➠ 錯誤代碼 ERR = "+str(err)+"\n")
@@ -332,6 +337,9 @@ def RunChiaPlot():
         lblx.config(text="  ➠ 耕地開始,請稍後....")
         t1 = threading.Thread(target=RunCmd,args=(cmdstr,))
         t1.start()
+    elif err == 6:
+        text1.insert(END,"   ➠ 礦池公鑰或是礦池合約必須有一個填入...... \n")
+        lblx.config(text="  ➠ 礦池公鑰或是礦池合約必須有一個填入....",bg="#F02080")
     elif err == 5:
         text1.insert(END,"   ➠ 設定框有遺漏輸入設定...... \n")
         lblx.config(text="  ➠ 設定框內必須有輸入文字....",bg="#F02080")
@@ -536,17 +544,18 @@ lb6 = Label(lbf2,text="礦池公鑰",font=fontsize)
 lb6.place(x=4,y=57)
 ppkComboBox = ttk.Combobox(width=39,justify=LEFT)
 ppkComboBox.place(x=74,y=82)
+ppkPoolTip = Hovertip(ppkComboBox,'注意: 如在礦池合約地址輸入合約地址會自動停用礦池公鑰.')
 
 lb7 = Label(lbf2,text="農民公鑰",font=fontsize)
 lb7.place(x=4,y=31)
 fpkComboBox = ttk.Combobox(width=39,justify=LEFT)
 fpkComboBox.place(x=74,y=55)
 
-lbPool = Label(lbf2,text="礦池合約地址:(輸入前三碼非xch字元會自動省略此參數)",font=fontsize,fg="#FF6060")
+lbPool = Label(lbf2,text="農會合約地址:(前三碼非xch會自動省略此參數並使用礦池公鑰)",font=fontsize,fg="#FF6060")
 lbPool.place(x=4,y=81)
 etrPool = Entry(lbf2,bg="#606060",fg="white",width=49,justify=LEFT)
 etrPool.place(x=7,y=101)
-etrPoolTip = Hovertip(etrPool,'進階功能: 如果沒用到,不要輸入任何東西,輸入前三碼非xch字元會省略此參數')
+etrPoolTip = Hovertip(etrPool,'進階功能: 前三碼非xch字元會省略此參數並使用礦池公鑰,若使用此參數礦池公鑰會自動無效')
 # ============================================
 # TODO: 創建輸入區按鈕集合
 # ============================================
