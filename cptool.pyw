@@ -17,7 +17,7 @@ from idlelib.tooltip import Hovertip
 # ============================================
 # 應用程式設定
 # ============================================
-ToolVersion = "0.32"                #程式版本
+ToolVersion = "0.33"                #程式版本
 win = Tk()                          #宣告視窗
 win.title("➠ 高速耕地執行工具 ➠ Ver "+ToolVersion)
 win.geometry("740x580")
@@ -28,7 +28,7 @@ os.chdir(cwd)
 # ============================================
 # 變數設定,請勿更動
 # ============================================
-CP_DEBUG = FALSE                     #除錯指令
+CP_DEBUG = TRUE                     #除錯指令
 counter = 0                         #目前執行次數,不須更動
 sec = 0                             #目前階段執行時間,不須更動
 cp_delay = 0                        #減少資源占用
@@ -43,7 +43,7 @@ startupinfo.dwFlags |= subprocess.STARTF_USESHOWWINDOW
 # ============================================
 fontsize = tkFont.Font(size=10)     #字型尺寸
 fname = cwd+"\\chia_plot.exe"       #chia_plot 高速P圖程式的檔案名稱
-ChiaVer = "1.1.7"                   #安裝的Chia版本(查詢公鑰,礦池公鑰,農民公鑰需要)
+ChiaVer = "1.2.0"                   #安裝的Chia版本(查詢公鑰,礦池公鑰,農民公鑰需要)
 PoltNum = "1"                       #執行耕地數量(一次要生產的耕地數量)
 CoreNum = "8"                       #耕地使用執行緒數量(依照自己的核心數調整)
 BuketNum = "256"                    #耕地使用桶數(不建議更動)
@@ -55,7 +55,9 @@ FarmerPublicKey = ""                #農民公鑰,請按顯示公鑰查詢
 chkValue = BooleanVar()
 chkValue.set(False)                 #-G 核取方塊,預設值 FALSE
 chkValueW = BooleanVar()
-chkValue.set(False)                 #-G 核取方塊,預設值 FALSE
+chkValueW.set(False)                 #-G 核取方塊,預設值 FALSE
+radioValue = IntVar()               #-c 或是 -p 選擇
+radioValue.set(1)                   # 預設值 1 = 農會耕地
 # ============================================
 # TODO: 清除進度區資料
 def UseTime():  
@@ -92,7 +94,7 @@ def ShowMeInfo():
     if etrver1.get() != "":
         chiaver = etrver1.get()
     else:
-        tkMsg.showwarning(title="Chia 版本未設定",message="Chia 版本必須設定才能輸出 Chia 公鑰資訊!\n 這裡將版本預設為1.1.7")
+        tkMsg.showwarning(title="Chia 版本未設定",message="Chia 版本必須設定才能輸出 Chia 公鑰資訊!\n 這裡將版本預設為1.2.0")
         chiaver = ChiaVer
         etrver1.insert(0,ChiaVer)
     text1.delete(1.0,END)
@@ -335,8 +337,9 @@ def RunChiaPlot():
         text1.insert(END," ============================================================== \n")
         text1.insert(END,"   ➠ 耕地開始,請稍後...... \n")
         lblx.config(text="  ➠ 耕地開始,請稍後....")
-        t1 = threading.Thread(target=RunCmd,args=(cmdstr,))
-        t1.start()
+        if not CP_DEBUG:
+            t1 = threading.Thread(target=RunCmd,args=(cmdstr,))
+            t1.start()
     elif err == 6:
         text1.insert(END,"   ➠ 礦池公鑰或是礦池合約必須有一個填入...... \n")
         lblx.config(text="  ➠ 礦池公鑰或是礦池合約必須有一個填入....",bg="#F02080")
@@ -392,15 +395,18 @@ def BackDefault():
 # TODO: 儲存設定,並且結束程式
 def ExitApp():  
     SFile = open(cwd+"\\cptool.ini",mode="w")
-    SFile.writelines(etr1.get()+"\n")
-    SFile.writelines(etr2.get()+"\n")
-    SFile.writelines(etr3.get()+"\n")
-    SFile.writelines(etr4.get()+"\n")
-    SFile.writelines(etr5.get()+"\n")
-    SFile.writelines(ppkComboBox.get()+"\n")
-    SFile.writelines(fpkComboBox.get()+"\n")
-    SFile.writelines(etr8.get()+"\n")
-    SFile.writelines(etrver1.get()+"\n")
+    SFile.writelines(etr1.get()+"\n")           #耕地數
+    SFile.writelines(etr2.get()+"\n")           #執行緒
+    SFile.writelines(etr3.get()+"\n")           #桶數量
+    SFile.writelines(etr4.get()+"\n")           #暫存1
+    SFile.writelines(etr5.get()+"\n")           #暫存2
+    SFile.writelines(ppkComboBox.get()+"\n")    #礦池公鑰
+    SFile.writelines(fpkComboBox.get()+"\n")    #農民公鑰
+    SFile.writelines(etr8.get()+"\n")           #最終路徑
+    SFile.writelines(etrver1.get()+"\n")        #Chia 版本
+    SFile.writelines(etrPool.get()+"\n")        #農會合約地址
+    SFile.writelines(str(radioValue.get())+"\n")#預設使用耕地
+    SFile.writelines(str(chkValueW.get())+"\n") #預設是否有複製時啟動下個耕地
     SFile.close
     win.destroy()
 # ============================================
@@ -466,6 +472,15 @@ def CheckDirList():
             return False
     except:
         return False
+def ChangPlot():
+    if radioValue.get() == 1:
+        ppkComboBox.config(state=DISABLED)
+        etrPool.config(state=NORMAL)
+        text1.insert(END,"\n  ➠ 切換至農會耕地!")
+    else:
+        etrPool.config(state=DISABLED)
+        ppkComboBox.config(state=NORMAL)
+        text1.insert(END,"\n  ➠ 切換至原始耕地!")
 # ============================================
 # TODO: 視窗主框架
 # ============================================
@@ -526,12 +541,12 @@ lb8.place(x=358,y=30)
 etr8 = Entry(lbf2,bg="#606060",fg="white",width=41,justify=LEFT)
 etr8.place(x=419,y=31)
 
-cbW = Checkbutton(lbf2, text="等待複製時啟動下一個耕地", variable=chkValueW)
-cbW.place(x=375,y=55)
+cbW = Checkbutton(lbf2, text="複製時啟動下個耕地", variable=chkValueW)
+cbW.place(x=505,y=55)
 cbWTip = Hovertip(cbW,'進階功能: 非必要,確定要使用才打勾,不懂不要打勾!')
 
 cbG = Checkbutton(lbf2, text="暫存切換", variable=chkValue)
-cbG.place(x=560,y=55)
+cbG.place(x=640,y=55)
 cbGTip = Hovertip(cbG,'進階功能: 非必要,確定要使用才打勾,不懂不要打勾!')
 
 lb34 = Label(lbf2,text="3-4桶",font=fontsize)
@@ -551,7 +566,13 @@ lb7.place(x=4,y=31)
 fpkComboBox = ttk.Combobox(width=39,justify=LEFT)
 fpkComboBox.place(x=74,y=55)
 
-lbPool = Label(lbf2,text="農會合約地址:(前三碼非xch會自動省略此參數並使用礦池公鑰)",font=fontsize,fg="#FF6060")
+# 單選按鈕
+rdioNew = Radiobutton(lbf2,text='農會耕地',variable=radioValue, value=1, command=ChangPlot)
+rdioNew.place(x=360,y=55)
+rdioOld = Radiobutton(lbf2,text='原始耕地',variable=radioValue, value=2, command=ChangPlot)
+rdioOld.place(x=430,y=55)
+
+lbPool = Label(lbf2,text="農會合約地址:(若要加入農會,務必輸入此參數)",font=fontsize,fg="#FF6060")
 lbPool.place(x=4,y=81)
 etrPool = Entry(lbf2,bg="#606060",fg="white",width=49,justify=LEFT)
 etrPool.place(x=7,y=101)
@@ -624,17 +645,42 @@ if os.path.exists(SFileName):
     fpkComboBox.insert(0,list1[6].replace("\n",""))
     # 目標路徑清除換行字元
     etr8.insert(0,list1[7].replace("\n",""))
-    try:
+    try:    # 讀取 Chia 版本
         etrver1.insert(0,list1[8].replace("\n",""))
     except:
         etrver1.insert(0,ChiaVer)
+    try:    # 讀取農會合約地址
+        etrPool.insert(0,list1[9].replace("\n",""))
+    except:
+        etrPool.insert(0,"")
+    try:    # 讀取是否為農會耕地
+        NewOldPlot = int(list1[10].replace("\n",""))
+        radioValue.set(NewOldPlot)
+        if NewOldPlot == 1:
+            ppkComboBox.config(state=DISABLED)
+            etrPool.config(state=NORMAL)
+        else:
+            ppkComboBox.config(state=NORMAL)
+            etrPool.config(state=DISABLED)
+    except:
+        radioValue.set(1)
+        ppkComboBox.config(state=DISABLED)
+        etrPool.config(state=NORMAL)
+    try:    # 讀取是否預設複製時執行下個耕地
+        if list1[11].replace("\n","") == "True":
+            chkValw = TRUE
+        else:
+            chkValw = FALSE
+        chkValueW.set(chkValw)
+    except:
+        chkValueW.set(False) 
     SFile.close
 else:
     BackDefault()
 # ============================================
 # TODO: 啟動系統後第一次顯示的訊息
 # ============================================
-text1.delete(1.0,END)
+#text1.delete(1.0,END)
 text1.insert(END," ============================================================== \n")
 text1.insert(END,"   ➠ 作者: mymag (mymag_20@msn.com)\n")
 text1.insert(END,"   ➠ 網頁: http://fgc.tw\n")
