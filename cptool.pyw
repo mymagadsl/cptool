@@ -17,7 +17,7 @@ from idlelib.tooltip import Hovertip
 # ============================================
 # 應用程式設定
 # ============================================
-ToolVersion = "0.33"                #程式版本
+ToolVersion = "0.34"                #程式版本
 win = Tk()                          #宣告視窗
 win.title("➠ 高速耕地執行工具 ➠ Ver "+ToolVersion)
 win.geometry("740x580")
@@ -28,7 +28,7 @@ os.chdir(cwd)
 # ============================================
 # 變數設定,請勿更動
 # ============================================
-CP_DEBUG = TRUE                     #除錯指令
+CP_DEBUG = FALSE                    #除錯指令
 counter = 0                         #目前執行次數,不須更動
 sec = 0                             #目前階段執行時間,不須更動
 cp_delay = 0                        #減少資源占用
@@ -177,6 +177,7 @@ def RunCmd(CmdStr):
     etr5.config(state=DISABLED)
     etr8.config(state=DISABLED)
     ppkComboBox.config(state=DISABLED)
+    etrPool.config(state=DISABLED)
     fpkComboBox.config(state=DISABLED)
     text1.insert(END," ============================================================== \n")
     text1.insert(END,"   ➠ 耕地準備中,請稍後...... \n")
@@ -272,8 +273,8 @@ def RunCmd(CmdStr):
     etr4.config(state=NORMAL)
     etr5.config(state=NORMAL)
     etr8.config(state=NORMAL)
-    ppkComboBox.config(state=NORMAL)
     fpkComboBox.config(state=NORMAL)
+    ChangPlot()
     return p
 # ============================================
 # TODO: 耕地之前檢查,首先除錯,防呆!!!
@@ -316,12 +317,16 @@ def RunChiaPlot():
     if chkValueW.get():
         cmdstr =cmdstr +" -w"
     cmdstr = cmdstr + " -t " + temp1 + " -2 " + temp2 + " -d " + target1
-    if len(ppkComboBox.get()) == 0 and not etrPool.get()[0:3] == "xch":
-        err = 6
-    if etrPool.get()[0:3] == "xch":
-        cmdstr = cmdstr + " -c " + etrPool.get()
+    if radioValue.get() == 1:
+        if not etrPool.get()[0:3] == "xch" and radioValue.get() == 1:
+            err = 6
+        else:
+            cmdstr = cmdstr + " -c " + etrPool.get()
     else:
-        cmdstr = cmdstr + " -p " + ppkComboBox.get()
+        if len(ppkComboBox.get()) == 0 and radioValue.get() == 2:
+            err = 6
+        else:
+            cmdstr = cmdstr + " -p " + ppkComboBox.get()
     cmdstr = cmdstr + " -f " + fpkComboBox.get()
     #開始檢測後執行
     text1.delete(1.0,END)
@@ -341,8 +346,8 @@ def RunChiaPlot():
             t1 = threading.Thread(target=RunCmd,args=(cmdstr,))
             t1.start()
     elif err == 6:
-        text1.insert(END,"   ➠ 礦池公鑰或是礦池合約必須有一個填入...... \n")
-        lblx.config(text="  ➠ 礦池公鑰或是礦池合約必須有一個填入....",bg="#F02080")
+        text1.insert(END,"   ➠ 礦池公鑰或是礦池合約與該選項沒有填入...... \n")
+        lblx.config(text="  ➠ 礦池公鑰或是礦池合約與該選項沒有填入....",bg="#F02080")
     elif err == 5:
         text1.insert(END,"   ➠ 設定框有遺漏輸入設定...... \n")
         lblx.config(text="  ➠ 設定框內必須有輸入文字....",bg="#F02080")
