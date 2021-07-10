@@ -17,7 +17,7 @@ from idlelib.tooltip import Hovertip
 # ============================================
 # 應用程式設定
 # ============================================
-ToolVersion = "0.34"                #程式版本
+ToolVersion = "0.35"                #程式版本
 win = Tk()                          #宣告視窗
 win.title("➠ 高速耕地執行工具 ➠ Ver "+ToolVersion)
 win.geometry("740x580")
@@ -39,7 +39,7 @@ cp_Num = 0                          #目前耕地數量
 startupinfo = subprocess.STARTUPINFO()
 startupinfo.dwFlags |= subprocess.STARTF_USESHOWWINDOW
 # ============================================
-# 預設值變數設定,可手動輸入
+# 預設值變數設定
 # ============================================
 fontsize = tkFont.Font(size=10)     #字型尺寸
 fname = cwd+"\\chia_plot.exe"       #chia_plot 高速P圖程式的檔案名稱
@@ -58,6 +58,7 @@ chkValueW = BooleanVar()
 chkValueW.set(False)                 #-G 核取方塊,預設值 FALSE
 radioValue = IntVar()               #-c 或是 -p 選擇
 radioValue.set(1)                   # 預設值 1 = 農會耕地
+GoldKey = [["0","0","0"]]
 # ============================================
 # TODO: 清除進度區資料
 def UseTime():  
@@ -122,25 +123,35 @@ def ShowMeInfo():
         counter = 1
         strppk=""
         strfpk=""
+        strpca=""
+        global GoldKey
         # 開始擷取每個公鑰並且填入下拉選單
         while TRUE:
             fpk = keys[counter].partition("Farmer public key")
             ppk = keys[counter].partition("Pool public key")
+            pca = keys[counter].partition(":")
             fpk = fpk[2].partition("):")
             ppk = ppk[2].partition("):")
+            pca = pca[2].partition(" ")
             fpk = fpk[2].split()
             ppk = ppk[2].split()
+            pca = pca[2].split()
             strppk = strppk + ppk[0]+" "
             strfpk = strfpk + fpk[0]+" "
+            strpca = strpca + pca[0]+" "
+            GoldKey.insert(counter,[pca[0],ppk[0],fpk[0]])
             if counter == 1:
                 ppkComboBox.delete(0,END)
                 fpkComboBox.delete(0,END)
+                pcaComboBox.delete(0,END)
                 ppkComboBox.insert(0,ppk[0])
                 fpkComboBox.insert(0,fpk[0])
+                pcaComboBox.insert(0,pca[0])
             #寫入下拉選單,並且指定下一筆資料
             if counter == keyscounter:               
                 ppkComboBox["value"] = strppk.split(" ")
                 fpkComboBox["value"] = strfpk.split(" ")
+                pcaComboBox["value"] = strpca.split(" ")
                 break
             counter += 1
     else:
@@ -237,7 +248,7 @@ def RunCmd(CmdStr):
                 sec = str(round(float(stra[5])/60,1))
                 cp_Num += 1
             if "Started copy to" in LineStr:
-                if not chkValueW.get():
+                if chkValueW.get():
                     lblx.config(text=" ➠ 複製耕地往目標資料夾中,耕地總計時間: "+str(sec)+" 分鐘",bg="#A03030")
                     etrxtext1.config(bg="#408040")
                 cp_delay = 0
@@ -412,6 +423,7 @@ def ExitApp():
     SFile.writelines(etrPool.get()+"\n")        #農會合約地址
     SFile.writelines(str(radioValue.get())+"\n")#預設使用耕地
     SFile.writelines(str(chkValueW.get())+"\n") #預設是否有複製時啟動下個耕地
+    SFile.writelines(str(pcaComboBox.get())+"\n") #儲存錢包指紋
     SFile.close
     win.destroy()
 # ============================================
@@ -486,6 +498,84 @@ def ChangPlot():
         etrPool.config(state=DISABLED)
         ppkComboBox.config(state=NORMAL)
         text1.insert(END,"\n  ➠ 切換至原始耕地!")
+def ViewKey(vkeys):
+    global GoldKey
+    global counter
+    counter = 0
+    maxcounter = len(GoldKey)
+    while counter < maxcounter:
+        if GoldKey[counter][0] == vkeys:
+            return GoldKey[counter][2]
+        counter += 1
+def ViewPpkKey(vkeys):
+    global GoldKey
+    global counter
+    counter = 0
+    maxcounter = len(GoldKey)
+    while counter < maxcounter:
+        if GoldKey[counter][0] == vkeys:
+            return GoldKey[counter][1]
+        counter += 1
+def PcaList(self):
+    LocalStr = os.getenv("LOCALAPPDATA")
+    if etrver1.get() != "":
+        chiaver = etrver1.get()
+    else:
+        tkMsg.showwarning(title="Chia 版本未設定",message="Chia 版本必須設定才能輸出 Chia 資訊!\n 這裡將版本預設為1.2.0")
+        chiaver = ChiaVer
+        etrver1.insert(0,ChiaVer)
+    text1.delete(1.0,END)
+    text1.insert(END," ============================================================== \n")
+    CmdStr = LocalStr+"\\chia-blockchain\\app-"+chiaver+"\\resources\\app.asar.unpacked\\daemon\\chia.exe"
+    if os.path.exists(CmdStr):
+        CmdStr ="\""+ CmdStr + "\" plotnft show -f " + pcaComboBox.get()
+        # 顯示指令
+        text1.insert(END," "+CmdStr+" \n")
+        if radioValue.get() == 1:
+            fpkComboBox.delete(0,END)
+            fpkComboBox.insert(0,ViewKey(pcaComboBox.get()))
+        else:
+            fpkComboBox.delete(0,END)
+            fpkComboBox.insert(0,ViewKey(pcaComboBox.get()))
+            ppkComboBox.delete(0,END)
+            ppkComboBox.insert(0,ViewPpkKey(pcaComboBox.get()))
+        with subprocess.Popen(CmdStr,startupinfo=startupinfo,shell=True,stdout=subprocess.PIPE, stderr=subprocess.PIPE, stdin=subprocess.PIPE) as p:
+            pcaskeys = p.stdout.read().decode("big5")
+            pcaserr = p.stderr.read().decode("big5")
+        #指定每組公鑰的分割字串
+        pcas = pcaskeys.split("Wallet id")
+        #讀取總共有幾組公鑰字串
+        pcascounter = pcaskeys.count("Wallet id")
+        text1.insert(END," ============================================================== \n")
+        text1.insert(END,pcaskeys+" \n")
+        text1.insert(END,pcaserr+" \n")
+        text1.insert(END," ============================================================== \n")
+        lblx.config(text="  ➠ 您共有 "+str(pcascounter)+" 組農會合約地址",bg="#404070")
+        text1.insert(END,"  ➠ 您共有 "+str(pcascounter)+" 組農會合約地址...\n")
+        text1.see(END)
+        global counter
+        counter = 1
+        strpca=""
+        # 開始擷取每個農會合約地址並且填入下拉選單
+        text1.insert(END," ============================================================== \n")
+        while TRUE:
+            pca = pcas[counter].partition("P2 singleton address (pool contract address for plotting): ")
+            text1.insert(END,pca[2][0:62]+"\n")
+            strpca = strpca + pca[2][0:62] + " "
+            if counter == 1:
+                etrPool.delete(0,END)
+                etrPool.insert(0,strpca)
+            #寫入下拉選單,並且指定下一筆資料
+            if counter == pcascounter:               
+                etrPool["value"] = strpca.split(" ")
+                text1.insert(END," ============================================================== \n")
+                break
+            counter += 1
+    else:
+        text1.insert(END," ============================================================== \n")
+        text1.insert(END,"  ➠ Chia主程式不存在,或是版本輸入不正確...\n")
+        lblx.config(text="  ➠ Chia主程式不存在,或是版本輸入不正確...",bg="#404070")
+        text1.see(END)
 # ============================================
 # TODO: 視窗主框架
 # ============================================
@@ -546,13 +636,13 @@ lb8.place(x=358,y=30)
 etr8 = Entry(lbf2,bg="#606060",fg="white",width=41,justify=LEFT)
 etr8.place(x=419,y=31)
 
-cbW = Checkbutton(lbf2, text="複製時啟動下個耕地", variable=chkValueW)
+cbW = Checkbutton(lbf2, text="等待複製完成再續耕", variable=chkValueW)
 cbW.place(x=505,y=55)
-cbWTip = Hovertip(cbW,'進階功能: 非必要,確定要使用才打勾,不懂不要打勾!')
+cbWTip = Hovertip(cbW,'進階功能: 耕地完成後等待複製完成才繼續下一個耕地,若沒打勾複製時會繼續下個耕地')
 
 cbG = Checkbutton(lbf2, text="暫存切換", variable=chkValue)
 cbG.place(x=640,y=55)
-cbGTip = Hovertip(cbG,'進階功能: 非必要,確定要使用才打勾,不懂不要打勾!')
+cbGTip = Hovertip(cbG,'進階功能: 非必要,確定要使用才打勾!')
 
 lb34 = Label(lbf2,text="3-4桶",font=fontsize)
 lb34.place(x=245,y=5)
@@ -572,15 +662,22 @@ fpkComboBox = ttk.Combobox(width=39,justify=LEFT)
 fpkComboBox.place(x=74,y=55)
 
 # 單選按鈕
-rdioNew = Radiobutton(lbf2,text='農會耕地',variable=radioValue, value=1, command=ChangPlot)
+rdioNew = Radiobutton(lbf2,text='農會耕地',fg="#106010",variable=radioValue, value=1, command=ChangPlot)
 rdioNew.place(x=360,y=55)
-rdioOld = Radiobutton(lbf2,text='原始耕地',variable=radioValue, value=2, command=ChangPlot)
+rdioOld = Radiobutton(lbf2,text='原始耕地',fg="#707070",variable=radioValue, value=2, command=ChangPlot)
 rdioOld.place(x=430,y=55)
 
-lbPool = Label(lbf2,text="農會合約地址:(若要加入農會,務必輸入此參數)",font=fontsize,fg="#FF6060")
+# 錢包指紋
+lbGoldKey = Label(lbf2,text="選擇錢包:",font=fontsize,fg="#6060FF")
+lbGoldKey.place(x=280,y=81)
+lbGoldKeyTip = Hovertip(lbGoldKey,'選擇錢包之前先選擇耕地再讀取公鑰')
+pcaComboBox = ttk.Combobox(width=10,justify=LEFT)
+pcaComboBox.place(x=354,y=106)
+pcaComboBox.bind("<<ComboboxSelected>>", PcaList)
+lbPool = Label(lbf2,text="農會合約地址:(加入農會)",font=fontsize,fg="#FF6060")
 lbPool.place(x=4,y=81)
-etrPool = Entry(lbf2,bg="#606060",fg="white",width=49,justify=LEFT)
-etrPool.place(x=7,y=101)
+etrPool = ttk.Combobox(width=58,justify=LEFT)
+etrPool.place(x=18,y=128)
 etrPoolTip = Hovertip(etrPool,'進階功能: 前三碼非xch字元會省略此參數並使用礦池公鑰,若使用此參數礦池公鑰會自動無效')
 # ============================================
 # TODO: 創建輸入區按鈕集合
@@ -591,8 +688,8 @@ btn2 = Button(lbf2,text="結束程式",font=fontsize,fg="#743A3A",width=7,height
 btn2.place(x=652,y=85)
 btn3 = Button(lbf2,text="預設值",font=fontsize ,height=2,command=BackDefault)
 btn3.place(x=519,y=85)
-btnX = Button(lbf2,text="顯示公鑰並自動填入選單",font=fontsize,fg="#4B0091",height=2,command=ShowMeInfo)
-btnX.place(x=360,y=85)
+btnX = Button(lbf2,text="讀取公鑰",font=fontsize,fg="#4B0091",height=2,command=ShowMeInfo)
+btnX.place(x=450,y=85)
 # ============================================
 # TODO: 創建進度區顯示框
 # ============================================
@@ -679,6 +776,11 @@ if os.path.exists(SFileName):
         chkValueW.set(chkValw)
     except:
         chkValueW.set(False) 
+    try:    # 讀取錢包指紋
+        if len(list1[12].replace("\n","")) > 0:
+            pcaComboBox.insert(END,list1[12].replace("\n",""))
+    except:
+        pcaComboBox.insert(END,"")
     SFile.close
 else:
     BackDefault()
@@ -697,6 +799,7 @@ text1.insert(END,"   ➠ 捐贈(BTC-Bitcoin): 33gxYWhbp5MsSfsrH5J5dr2dmmbhZdFApq
 text1.insert(END," ============================================================== \n")
 text1.insert(END,"   ➠ madMAx43v3r/chia-plotter 最新版下載位置 \n   ➠ https://github.com/stotiks/chia-plotter/releases\n")
 text1.insert(END," ============================================================== \n")
+text1.insert(END,"   ➲ 感謝每一位捐贈者,不管多少,請受小第一拜! 感謝! \n")
 if not os.path.exists(fname):
     text1.insert(END,"\n ----------------------------------------------------------------------------- \n")
     text1.insert(END,"   ➠ 耕地程式 \"" + os.path.abspath(fname) + "\" 檔案不存在!! \n")
