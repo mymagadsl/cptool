@@ -1,3 +1,4 @@
+
 作者: mymag (mymag_20@msn.com)
 
 作者網站: http://fgc.tw
@@ -26,5 +27,4 @@
     2.捐贈(BTC-Bitcoin): 33gxYWhbp5MsSfsrH5J5dr2dmmbhZdFApq
     3.程式碼協助: https://github.com/mymagadsl/cptool/pulls
     
-![cptool_0 35](https://user-images.githubusercontent.com/6682942/125153172-7df3e280-e184-11eb-8187-eeadc8aab59f.PNG)
-
+![cptool_0 35](https://user-images.githubusercontent.com/6682942/125160823-a940f680-e1b1-11eb-83b4-84e3d6724201.PNG)
