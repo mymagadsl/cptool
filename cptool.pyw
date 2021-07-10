@@ -17,7 +17,7 @@ from idlelib.tooltip import Hovertip
 # ============================================
 # 應用程式設定
 # ============================================
-ToolVersion = "0.35"                #程式版本
+ToolVersion = "0.37"                #程式版本
 win = Tk()                          #宣告視窗
 win.title("➠ 高速耕地執行工具 ➠ Ver "+ToolVersion)
 win.geometry("740x580")
@@ -190,6 +190,12 @@ def RunCmd(CmdStr):
     ppkComboBox.config(state=DISABLED)
     etrPool.config(state=DISABLED)
     fpkComboBox.config(state=DISABLED)
+    pcaComboBox.config(state=DISABLED)
+    rdioNew.config(state=DISABLED)
+    rdioOld.config(state=DISABLED)
+    cbW.config(state=DISABLED)
+    cbG.config(state=DISABLED)
+    etrver1.config(state=DISABLED)
     text1.insert(END," ============================================================== \n")
     text1.insert(END,"   ➠ 耕地準備中,請稍後...... \n")
     text1.insert(END," ============================================================== \n")
@@ -285,6 +291,12 @@ def RunCmd(CmdStr):
     etr5.config(state=NORMAL)
     etr8.config(state=NORMAL)
     fpkComboBox.config(state=NORMAL)
+    pcaComboBox.config(state=NORMAL)
+    rdioNew.config(state=NORMAL)
+    rdioOld.config(state=NORMAL)
+    cbW.config(state=NORMAL)
+    cbG.config(state=NORMAL)
+    etrver1.config(state=DISABLED)
     ChangPlot()
     return p
 # ============================================
@@ -527,7 +539,7 @@ def PcaList(self):
     text1.delete(1.0,END)
     text1.insert(END," ============================================================== \n")
     CmdStr = LocalStr+"\\chia-blockchain\\app-"+chiaver+"\\resources\\app.asar.unpacked\\daemon\\chia.exe"
-    if os.path.exists(CmdStr):
+    if os.path.exists(CmdStr) and len(GoldKey)> 1:
         CmdStr ="\""+ CmdStr + "\" plotnft show -f " + pcaComboBox.get()
         # 顯示指令
         text1.insert(END," "+CmdStr+" \n")
@@ -573,8 +585,8 @@ def PcaList(self):
             counter += 1
     else:
         text1.insert(END," ============================================================== \n")
-        text1.insert(END,"  ➠ Chia主程式不存在,或是版本輸入不正確...\n")
-        lblx.config(text="  ➠ Chia主程式不存在,或是版本輸入不正確...",bg="#404070")
+        text1.insert(END,"  ➠ 未先按下讀取公鑰,無法產生農會合約地址下拉選項...\n")
+        lblx.config(text="  ➠ 未先按下讀取公鑰,無法產生農會合約地址下拉選項...",bg="#404070")
         text1.see(END)
 # ============================================
 # TODO: 視窗主框架
@@ -670,10 +682,12 @@ rdioOld.place(x=430,y=55)
 # 錢包指紋
 lbGoldKey = Label(lbf2,text="選擇錢包:",font=fontsize,fg="#6060FF")
 lbGoldKey.place(x=280,y=81)
-lbGoldKeyTip = Hovertip(lbGoldKey,'選擇錢包之前先選擇耕地再讀取公鑰')
+lbGoldKeyTip = Hovertip(lbGoldKey,'選擇錢包之前先選擇耕地再讀取公鑰,按Enter讀取農會,或是下拉選擇')
 pcaComboBox = ttk.Combobox(width=10,justify=LEFT)
 pcaComboBox.place(x=354,y=106)
 pcaComboBox.bind("<<ComboboxSelected>>", PcaList)
+pcaComboBox.bind("<Return>", PcaList)
+pcaComboBoxTip = Hovertip(pcaComboBox,'選擇錢包之前先選擇耕地再讀取公鑰,按Enter讀取農會,或是下拉選擇')
 lbPool = Label(lbf2,text="農會合約地址:(加入農會)",font=fontsize,fg="#FF6060")
 lbPool.place(x=4,y=81)
 etrPool = ttk.Combobox(width=58,justify=LEFT)
@@ -799,7 +813,7 @@ text1.insert(END,"   ➠ 捐贈(BTC-Bitcoin): 33gxYWhbp5MsSfsrH5J5dr2dmmbhZdFApq
 text1.insert(END," ============================================================== \n")
 text1.insert(END,"   ➠ madMAx43v3r/chia-plotter 最新版下載位置 \n   ➠ https://github.com/stotiks/chia-plotter/releases\n")
 text1.insert(END," ============================================================== \n")
-text1.insert(END,"   ➲ 感謝每一位捐贈者,不管多少,請受小第一拜! 感謝! \n")
+text1.insert(END,"   ➲ 感謝每一位捐贈者,不管多少,請受小的一拜! 感謝! \n")
 if not os.path.exists(fname):
     text1.insert(END,"\n ----------------------------------------------------------------------------- \n")
     text1.insert(END,"   ➠ 耕地程式 \"" + os.path.abspath(fname) + "\" 檔案不存在!! \n")
