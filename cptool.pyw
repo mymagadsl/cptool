@@ -18,7 +18,7 @@ from idlelib.tooltip import Hovertip
 # ============================================
 # 應用程式設定
 # ============================================
-ToolVersion = "0.39"                #程式版本
+ToolVersion = "0.40"                #程式版本
 win = Tk()                          #宣告視窗
 win.title("➠ 高速耕地執行工具 ➠ Ver "+ToolVersion)
 win.geometry("740x580")
@@ -52,10 +52,7 @@ BuketNum = "256"                    #耕地使用桶數(不建議更動)
 TempDir1 = "D:\\CHIATEMP\\"         #耕地使用的暫存資料夾1
 TempDir2 = "D:\\CHIATEMP\\"         #耕地使用的暫存資料夾2(作者建議使用RAM)
 TargetDir = "E:\\CHIA\\"            #耕地完成檔案放置位置
-try:
-    HDDusage = psutil.disk_usage(etr8.get())
-except:
-    HDDusage = psutil.disk_usage("C:\\")
+HDDusage = psutil.disk_usage("C:\\")
 PoolPublicKey = ""                  #礦池公鑰,請按顯示公鑰查詢
 FarmerPublicKey = ""                #農民公鑰,請按顯示公鑰查詢
 chkValue = BooleanVar()
