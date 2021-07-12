@@ -13,11 +13,12 @@ import threading
 import tkinter.font as tkFont
 import tkinter.ttk as ttk
 import tkinter.messagebox as tkMsg
+import psutil
 from idlelib.tooltip import Hovertip
 # ============================================
 # 應用程式設定
 # ============================================
-ToolVersion = "0.37"                #程式版本
+ToolVersion = "0.38"                #程式版本
 win = Tk()                          #宣告視窗
 win.title("➠ 高速耕地執行工具 ➠ Ver "+ToolVersion)
 win.geometry("740x580")
@@ -41,7 +42,8 @@ startupinfo.dwFlags |= subprocess.STARTF_USESHOWWINDOW
 # ============================================
 # 預設值變數設定
 # ============================================
-fontsize = tkFont.Font(size=10)     #字型尺寸
+fontsize = tkFont.Font(size="10")     #字型尺寸
+hddsizefont = tkFont.Font(family="微軟正黑體",size="10",weight="bold")
 fname = cwd+"\\chia_plot.exe"       #chia_plot 高速P圖程式的檔案名稱
 ChiaVer = "1.2.0"                   #安裝的Chia版本(查詢公鑰,礦池公鑰,農民公鑰需要)
 PoltNum = "1"                       #執行耕地數量(一次要生產的耕地數量)
@@ -50,6 +52,10 @@ BuketNum = "256"                    #耕地使用桶數(不建議更動)
 TempDir1 = "D:\\CHIATEMP\\"         #耕地使用的暫存資料夾1
 TempDir2 = "D:\\CHIATEMP\\"         #耕地使用的暫存資料夾2(作者建議使用RAM)
 TargetDir = "E:\\CHIA\\"            #耕地完成檔案放置位置
+try:
+    HDDusage = psutil.disk_usage(etr8.get())
+except:
+    HDDusage = psutil.disk_usage("C:\\")
 PoolPublicKey = ""                  #礦池公鑰,請按顯示公鑰查詢
 FarmerPublicKey = ""                #農民公鑰,請按顯示公鑰查詢
 chkValue = BooleanVar()
@@ -261,6 +267,10 @@ def RunCmd(CmdStr):
                 text2.insert(END,str(cp_Num)+"/"+cp_NumEnd,"tag1")
                 text2.insert(END,":")
                 text2.insert(END,str(sec)+"\n","tag2")
+                HDDusage = psutil.disk_usage(etr8.get()[0:2])
+                HddFreeSize = round(((HDDusage.free/1024)/1024)/1024)
+                if HddFreeSize <= 318:
+                    text2.insert(END,"硬碟快用完\n","tag1")
                 text2.see(END)
             # 減少資源占用
             if cp_delay == 1:
@@ -588,6 +598,18 @@ def PcaList(self):
         text1.insert(END,"  ➠ 未先按下讀取公鑰,無法產生農會合約地址下拉選項...\n")
         lblx.config(text="  ➠ 未先按下讀取公鑰,無法產生農會合約地址下拉選項...",bg="#404070")
         text1.see(END)
+def CheckHddFreeSize(self):
+    TargetDir = etr8.get()
+    try:
+        if len(TargetDir) >=2:
+            HDDusage = psutil.disk_usage(TargetDir[0:2])
+            HddFreeSize = round(((HDDusage.free/1024)/1024)/1024)
+            if HddFreeSize >= 106:
+                lbdisksize.config(text=str(HddFreeSize)+" GiB",fg="#107010")
+            else:
+                lbdisksize.config(text=str(HddFreeSize)+" GiB",fg="#701010")
+    except:
+        text1.insert(END,"  ➠ 請檢查最終路徑是否正確!\n")
 # ============================================
 # TODO: 視窗主框架
 # ============================================
@@ -644,9 +666,16 @@ lb5.place(x=521,y=5)
 etr5 = Entry(lbf2,bg="#606060",fg="white",width=20,justify=LEFT)
 etr5.place(x=568,y=6)
 lb8 = Label(lbf2,text="最終路徑",font=fontsize)
-lb8.place(x=358,y=30)
-etr8 = Entry(lbf2,bg="#606060",fg="white",width=41,justify=LEFT)
+lb8.place(x=359,y=30)
+etr8 = Entry(lbf2,bg="#606060",fg="white",width=30,justify=LEFT)
 etr8.place(x=419,y=31)
+etr8.bind("<Key>",CheckHddFreeSize)
+HddFreeSize = round(((HDDusage.free/1024)/1024)/1024)
+if HddFreeSize >= 106:
+    lbdisksize = Label(lbf2,text=str(HddFreeSize)+" GiB",fg="#107010",font=hddsizefont,width=10)
+else:
+    lbdisksize = Label(lbf2,text=str(HddFreeSize)+" GiB",fg="#701010",font=hddsizefont,width=10)
+lbdisksize.place(x=634,y=30)
 
 cbW = Checkbutton(lbf2, text="等待複製完成再續耕", variable=chkValueW)
 cbW.place(x=505,y=55)
@@ -761,6 +790,7 @@ if os.path.exists(SFileName):
     fpkComboBox.insert(0,list1[6].replace("\n",""))
     # 目標路徑清除換行字元
     etr8.insert(0,list1[7].replace("\n",""))
+    CheckHddFreeSize(None)
     try:    # 讀取 Chia 版本
         etrver1.insert(0,list1[8].replace("\n",""))
     except:
@@ -813,7 +843,11 @@ text1.insert(END,"   ➠ 捐贈(BTC-Bitcoin): 33gxYWhbp5MsSfsrH5J5dr2dmmbhZdFApq
 text1.insert(END," ============================================================== \n")
 text1.insert(END,"   ➠ madMAx43v3r/chia-plotter 最新版下載位置 \n   ➠ https://github.com/stotiks/chia-plotter/releases\n")
 text1.insert(END," ============================================================== \n")
+text1.insert(END,"   ➲ 請問有沒有支援K32以外的耕地呢? \n")
+text1.insert(END,"   ➲ 因為是 madMAx43v3r/chia-plotter 只支援K32,並不是CTPool不支援\n")
+text1.insert(END," ============================================================== \n")
 text1.insert(END,"   ➲ 感謝每一位捐贈者,不管多少,請受小的一拜! 感謝! \n")
+
 if not os.path.exists(fname):
     text1.insert(END,"\n ----------------------------------------------------------------------------- \n")
     text1.insert(END,"   ➠ 耕地程式 \"" + os.path.abspath(fname) + "\" 檔案不存在!! \n")
