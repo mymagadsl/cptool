@@ -208,6 +208,7 @@ def RunCmd(CmdStr):
     lblx.config(text="   ➠ 耕地準備中,請稍後...... ",bg="#702020")
     text2.tag_config("tag1",foreground="#84C1FF")
     text2.tag_config("tag2",foreground="#FFDC35")
+    text2.tag_config("tag3",foreground="#FF2020")
     # 開始執行指令
     with subprocess.Popen(CmdStr,startupinfo=startupinfo,shell=False,stdout=subprocess.PIPE, stderr=subprocess.PIPE, stdin=subprocess.PIPE) as p:
         lblx.config(text=" ➠ 開始耕地中,請稍後... ",bg="#903030")
@@ -267,10 +268,11 @@ def RunCmd(CmdStr):
                 text2.insert(END,str(cp_Num)+"/"+cp_NumEnd,"tag1")
                 text2.insert(END,":")
                 text2.insert(END,str(sec)+"\n","tag2")
+                CheckHddFreeSize(None)
                 HDDusage = psutil.disk_usage(etr8.get()[0:2])
                 HddFreeSize = round(((HDDusage.free/1024)/1024)/1024)
                 if HddFreeSize <= 318:
-                    text2.insert(END,"硬碟快用完\n","tag1")
+                    text2.insert(END,"硬碟快用完\n","tag3")
                 text2.see(END)
             # 減少資源占用
             if cp_delay == 1:
