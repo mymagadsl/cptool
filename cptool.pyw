@@ -18,7 +18,7 @@ from idlelib.tooltip import Hovertip
 # ============================================
 # 應用程式設定
 # ============================================
-ToolVersion = "0.40"                #程式版本
+ToolVersion = "0.41"                #程式版本
 win = Tk()                          #宣告視窗
 win.title("➠ 高速耕地執行工具 ➠ Ver "+ToolVersion)
 win.geometry("740x580")
@@ -258,9 +258,8 @@ def RunCmd(CmdStr):
                 sec = str(round(float(stra[5])/60,1))
                 cp_Num += 1
             if "Started copy to" in LineStr:
-                if chkValueW.get():
-                    lblx.config(text=" ➠ 複製耕地往目標資料夾中,耕地總計時間: "+str(sec)+" 分鐘",bg="#A03030")
-                    etrxtext1.config(bg="#408040")
+                lblx.config(text=" ➠ 複製耕地往目標資料夾中,耕地總計時間: "+str(sec)+" 分鐘",bg="#A03030")
+                etrxtext1.config(bg="#408040")
                 cp_delay = 0
                 text2.insert(END,str(cp_Num)+"/"+cp_NumEnd,"tag1")
                 text2.insert(END,":")
@@ -270,6 +269,7 @@ def RunCmd(CmdStr):
                 HddFreeSize = round(((HDDusage.free/1024)/1024)/1024)
                 if HddFreeSize <= 318:
                     text2.insert(END,"硬碟快用完\n","tag3")
+                    lblx.config(text=" ➠ 目標硬碟剩餘 "+HddFreeSize+"GiB 了! 準備更換目標硬碟!",bg="#2070FF")
                 text2.see(END)
             # 減少資源占用
             if cp_delay == 1:
@@ -360,6 +360,8 @@ def RunChiaPlot():
         else:
             cmdstr = cmdstr + " -p " + ppkComboBox.get()
     cmdstr = cmdstr + " -f " + fpkComboBox.get()
+    #開始時先更新硬碟容量
+    CheckHddFreeSize(None)
     #開始檢測後執行
     text1.delete(1.0,END)
     text1.insert(END,"   ➠ 錯誤代碼 ERR = "+str(err)+"\n")
@@ -604,10 +606,11 @@ def CheckHddFreeSize(self):
             HDDusage = psutil.disk_usage(TargetDir[0:2])
             HddFreeSize = round(((HDDusage.free/1024)/1024)/1024)
             if HddFreeSize >= 106:
-                lbdisksize.config(text=str(HddFreeSize)+" GiB",fg="#107010")
+                lbdisksize.config(text=str(HddFreeSize)+" GiB",fg="#208020")
             else:
-                lbdisksize.config(text=str(HddFreeSize)+" GiB",fg="#701010")
+                lbdisksize.config(text=str(HddFreeSize)+" GiB",fg="#802020")
     except:
+        lbdisksize.config(text="硬碟不存在",fg="#903030")
         text1.insert(END,"  ➠ 請檢查最終路徑是否正確!\n")
 # ============================================
 # TODO: 視窗主框架
