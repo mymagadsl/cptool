@@ -18,7 +18,7 @@ from idlelib.tooltip import Hovertip
 # ============================================
 # 應用程式設定
 # ============================================
-ToolVersion = "0.41"                #程式版本
+ToolVersion = "0.42"                #程式版本
 win = Tk()                          #宣告視窗
 win.title("➠ 高速耕地執行工具 ➠ Ver "+ToolVersion)
 win.geometry("740x580")
@@ -45,7 +45,7 @@ startupinfo.dwFlags |= subprocess.STARTF_USESHOWWINDOW
 fontsize = tkFont.Font(size="10")     #字型尺寸
 hddsizefont = tkFont.Font(family="微軟正黑體",size="10",weight="bold")
 fname = cwd+"\\chia_plot.exe"       #chia_plot 高速P圖程式的檔案名稱
-ChiaVer = "1.2.0"                   #安裝的Chia版本(查詢公鑰,礦池公鑰,農民公鑰需要)
+ChiaVer = "1.2.1"                   #安裝的Chia版本(查詢公鑰,礦池公鑰,農民公鑰需要)
 PoltNum = "1"                       #執行耕地數量(一次要生產的耕地數量)
 CoreNum = "8"                       #耕地使用執行緒數量(依照自己的核心數調整)
 BuketNum = "256"                    #耕地使用桶數(不建議更動)
@@ -260,16 +260,12 @@ def RunCmd(CmdStr):
             if "Started copy to" in LineStr:
                 lblx.config(text=" ➠ 複製耕地往目標資料夾中,耕地總計時間: "+str(sec)+" 分鐘",bg="#A03030")
                 etrxtext1.config(bg="#408040")
-                cp_delay = 0
                 text2.insert(END,str(cp_Num)+"/"+cp_NumEnd,"tag1")
                 text2.insert(END,":")
                 text2.insert(END,str(sec)+"\n","tag2")
-                CheckHddFreeSize(None)
-                HDDusage = psutil.disk_usage(etr8.get()[0:2])
-                HddFreeSize = round(((HDDusage.free/1024)/1024)/1024)
-                if HddFreeSize <= 318:
+                if CheckHddFreeSize(None) <= 318:
                     text2.insert(END,"硬碟快用完\n","tag3")
-                    lblx.config(text=" ➠ 目標硬碟剩餘 "+HddFreeSize+"GiB 了! 準備更換目標硬碟!",bg="#2070FF")
+                cp_delay = 0
                 text2.see(END)
             # 減少資源占用
             if cp_delay == 1:
@@ -305,7 +301,7 @@ def RunCmd(CmdStr):
     rdioOld.config(state=NORMAL)
     cbW.config(state=NORMAL)
     cbG.config(state=NORMAL)
-    etrver1.config(state=DISABLED)
+    etrver1.config(state=NORMAL)
     ChangPlot()
     return p
 # ============================================
@@ -361,7 +357,8 @@ def RunChiaPlot():
             cmdstr = cmdstr + " -p " + ppkComboBox.get()
     cmdstr = cmdstr + " -f " + fpkComboBox.get()
     #開始時先更新硬碟容量
-    CheckHddFreeSize(None)
+    if CheckHddFreeSize(None) < 106:
+        err = 7
     #開始檢測後執行
     text1.delete(1.0,END)
     text1.insert(END,"   ➠ 錯誤代碼 ERR = "+str(err)+"\n")
@@ -379,6 +376,9 @@ def RunChiaPlot():
         if not CP_DEBUG:
             t1 = threading.Thread(target=RunCmd,args=(cmdstr,))
             t1.start()
+    elif err == 7:
+        text1.insert(END,"   ➠ 目標路徑硬碟空間不足,或是路徑錯誤...... \n")
+        lblx.config(text="  ➠ 目標路徑硬碟空間不足,或是路徑錯誤....",bg="#F02080")    
     elif err == 6:
         text1.insert(END,"   ➠ 礦池公鑰或是礦池合約與該選項沒有填入...... \n")
         lblx.config(text="  ➠ 礦池公鑰或是礦池合約與該選項沒有填入....",bg="#F02080")
@@ -609,9 +609,11 @@ def CheckHddFreeSize(self):
                 lbdisksize.config(text=str(HddFreeSize)+" GiB",fg="#208020")
             else:
                 lbdisksize.config(text=str(HddFreeSize)+" GiB",fg="#802020")
+            return HddFreeSize
     except:
         lbdisksize.config(text="硬碟不存在",fg="#903030")
         text1.insert(END,"  ➠ 請檢查最終路徑是否正確!\n")
+        return 0
 # ============================================
 # TODO: 視窗主框架
 # ============================================
@@ -792,7 +794,7 @@ if os.path.exists(SFileName):
     fpkComboBox.insert(0,list1[6].replace("\n",""))
     # 目標路徑清除換行字元
     etr8.insert(0,list1[7].replace("\n",""))
-    CheckHddFreeSize(None)
+    HddFree = CheckHddFreeSize(None)
     try:    # 讀取 Chia 版本
         etrver1.insert(0,list1[8].replace("\n",""))
     except:
