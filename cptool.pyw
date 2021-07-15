@@ -18,7 +18,7 @@ from idlelib.tooltip import Hovertip
 # ============================================
 # 應用程式設定
 # ============================================
-ToolVersion = "0.44"                #程式版本
+ToolVersion = "0.45"                #程式版本
 win = Tk()                          #宣告視窗
 win.title("➠ 高速耕地執行工具 ➠ Ver "+ToolVersion)
 win.geometry("740x580")
@@ -59,23 +59,129 @@ FarmerPublicKey = ""                #農民公鑰,請按顯示公鑰查詢
 chkValue = BooleanVar()
 chkValue.set(False)                 #-G 核取方塊,預設值 FALSE
 chkValueW = BooleanVar()
-chkValueW.set(False)                 #-G 核取方塊,預設值 FALSE
+chkValueW.set(True)                #-W 核取方塊,預設值 True
 radioValue = IntVar()               #-c 或是 -p 選擇
-radioValue.set(1)                   # 預設值 1 = 農會耕地
-GoldKey = [["0","0","0"]]
+radioValue.set(1)                   #預設值 1 = 農會耕地
+GoldKey = [["0","0","0"]]           #金鑰資料存放
+# ============================================
+# 可將以下文字複製除存到 gui_color.ini 檔案覆蓋,方便對照
+#84C1FF #0紀錄區耕地數量
+#FFDC35 #1紀錄區耕地時間
+#FF2020 #2紀錄區硬碟快用完
+#702020 #3狀態列耕地準備中請稍後
+#903030 #4狀態列開始耕地中請稍後
+#BF0060 #5狀態列複製耕地前往目標
+#502020 #6狀態列階段顏色
+#C0C040 #7狀態列中斷耕地
+#C0C060 #8狀態列中斷過程
+#206020 #9狀態列耕地完成
+#7E3D76 #10第一階段格子
+#003E3E #11第一階段完成格子
+#7E3D76 #12第二階段格子
+#003E3E #13第二階段完成格子
+#7E3D76 #14第三階段格子
+#003E3E #15第三階段完成格子
+#7E3D76 #16第四階段格子
+#003E3E #17第四階段完成格子
+#C0C0C0 #18階段格子預設顏色
+#303030 #19目前耕地預設顏色
+#6C3365 #20目前耕地耕地開始
+#003E3E #21目前耕地耕地完成
+#F02080 #22狀態列錯誤訊息
+#202070 #23狀態列主程式不存在或版本不正確
+#202070 #24狀態列共有幾組公鑰
+#404040 #25狀態列預設值
+#404040 #26紀錄區顯示框背景色
+#404040 #27顯示區版本
+#303030 #28顯示區程式執行結果區(內文)
+#C0C060 #29狀態列正在刪除暫存的檔案(過程)
+#404040 #30狀態列暫存1與暫存2刪除完畢!
+#404070 #31狀態列你共有幾組農會合約地址
+#404070 #32狀態列未先按下讀取公鑰無法產生農會合約地址下拉選項
+#404040 #33輸入框背景色
+#404040 #34狀態列歡迎使用高速耕地執行工具
+#FFFF40 #35顯示區內文第一塊(預設:黃色 #FFFF40)
+#FF40FF #36顯示區內文第二塊(預設:粉紅 #FF40FF)
+#40FFFF #37顯示區內文第三塊(預設:天藍 #40FFFF)
+
+Gui_Color = [   #此變數為顏色預設值
+    "#84C1FF",	#0紀錄區,耕地數量
+    "#FFDC35",	#1紀錄區,耕地時間
+	"#FF2020",	#2紀錄區,硬碟快用完
+	"#702020",	#3狀態列,耕地準備中,請稍後
+	"#903030",	#4狀態列,開始耕地中,請稍後
+	"#BF0060",	#5狀態列,複製耕地前往目標
+	"#502020",	#6狀態列,階段顏色
+	"#C0C040",	#7狀態列,中斷耕地
+	"#C0C060",	#8狀態列,中斷過程
+	"#206020",	#9狀態列,耕地完成
+	"#7E3D76",	#10第一階段,格子
+	"#003E3E",	#11第一階段,完成格子
+	"#7E3D76",	#12第二階段,格子
+	"#003E3E",	#13第二階段,完成格子
+	"#7E3D76",	#14第三階段,格子
+	"#003E3E",	#15第三階段,完成格子
+	"#7E3D76",	#16第四階段,格子
+	"#003E3E",	#17第四階段,完成格子
+	"#C0C0C0",	#18階段格子預設顏色
+	"#303030",	#19目前耕地,預設顏色
+	"#6C3365",	#20目前耕地,耕地開始
+	"#003E3E",	#21目前耕地,耕地完成
+    "#F02080",	#22狀態列,錯誤訊息
+    "#202070",  #23狀態列,主程式不存在,或版本不正確
+    "#202070",  #24狀態列,共有幾組公鑰
+    "#404040",  #25狀態列,預設值
+    "#404040",  #26紀錄區,顯示框背景色
+    "#404040",  #27顯示區,版本
+    "#303030",  #28顯示區,程式執行結果區(內文)
+    "#C0C060",  #29狀態列,正在刪除暫存的檔案(過程)
+    "#404040",  #30狀態列,暫存1與暫存2刪除完畢!
+    "#404070",  #31狀態列,你共有幾組農會合約地址
+    "#404070",  #32狀態列,未先按下讀取公鑰,無法產生農會合約地址下拉選項
+    "#404040",  #33輸入框,背景色
+    "#404040",  #34狀態列,歡迎使用高速耕地執行工具
+    "#FFFF40",  #35顯示區,內文第一塊(預設:黃色 #FFFF40)
+    "#FF40FF",  #36顯示區,內文第二塊(預設:粉紅 #FF40FF)
+    "#40FFFF",  #37顯示區,內文第三塊(預設:天藍 #40FFFF)
+    ]           #GUI顏色預設值
+#讀取顏色檔案
+counter=0
+SFileName = cwd+"\\gui_color.ini"
+if os.path.exists(SFileName): #如果檔案存在就讀取
+    SFile = open(cwd+"\\gui_color.ini",mode="r",encoding="utf-8")
+    list1 =  SFile.readlines()
+    while TRUE:
+        list1[counter] = list1[counter].replace("\n","")
+        Gui_Color[counter] = list1[counter][:7]
+        counter += 1
+        if counter == 38:
+            break
+    SFile.close
+else: #如果檔案不存在就寫入
+    SFile = open(cwd+"\\gui_color.ini",mode="w")
+    while TRUE:
+        try:
+            SFile.writelines(Gui_Color[counter]+"\n")
+            counter += 1
+            if counter == 38:
+                break
+        except:
+            break
+        SFile.close
 # ============================================
 # TODO: 清除進度區資料
-def UseTime():  
+def UseTime():
+    global Gui_Color
     etrxtext1.delete(0,END)
     etrxtext2.delete(0,END)
     etrxtext3.delete(0,END)
     etrxtext4.delete(0,END)
     etrxtext5.delete(0,END)
-    etrxtext1.config(bg="#202020",fg="white")
-    etrxtext2.config(bg="#C0C0C0")
-    etrxtext3.config(bg="#C0C0C0")
-    etrxtext4.config(bg="#C0C0C0")
-    etrxtext5.config(bg="#C0C0C0")
+    etrxtext1.config(bg=Gui_Color[19],fg="white")
+    etrxtext2.config(bg=Gui_Color[18])
+    etrxtext3.config(bg=Gui_Color[18])
+    etrxtext4.config(bg=Gui_Color[18])
+    etrxtext5.config(bg=Gui_Color[18])
 # ============================================
 # TODO: 檢查是否忘了加上斜線
 def CheckDir(temp1,temp2,target1):  
@@ -95,6 +201,7 @@ def CheckDir(temp1,temp2,target1):
 # ============================================
 # TODO: 顯示並填入公鑰資訊
 def ShowMeInfo():
+    global Gui_Color
     LocalStr = os.getenv("LOCALAPPDATA")
     if etrver1.get() != "":
         chiaver = etrver1.get()
@@ -120,7 +227,7 @@ def ShowMeInfo():
         text1.insert(END,showkeys+" \n")
         text1.insert(END,showerr+" \n")
         text1.insert(END," ============================================================== \n")
-        lblx.config(text="  ➠ 您共有 "+str(keyscounter)+" 組公鑰",bg="#404070")
+        lblx.config(text="  ➠ 您共有 "+str(keyscounter)+" 組公鑰",bg=Gui_Color[24])
         text1.insert(END,"  ➠ 您共有 "+str(keyscounter)+" 組公鑰...\n")
         text1.see(END)
         global counter
@@ -161,7 +268,7 @@ def ShowMeInfo():
     else:
         text1.insert(END," ============================================================== \n")
         text1.insert(END,"  ➠ Chia主程式不存在,或是版本輸入不正確...\n")
-        lblx.config(text="  ➠ Chia主程式不存在,或是版本輸入不正確...",bg="#404070")
+        lblx.config(text="  ➠ Chia主程式不存在,或是版本輸入不正確...",bg=Gui_Color[23])
         text1.see(END)
 # ============================================
 # TODO: 正式開始!! 執行外部指令,P圖開始
@@ -203,13 +310,13 @@ def RunCmd(CmdStr):
     text1.insert(END," ============================================================== \n")
     text1.insert(END,"   ➠ 耕地準備中,請稍後...... \n")
     text1.insert(END," ============================================================== \n")
-    lblx.config(text="   ➠ 耕地準備中,請稍後...... ",bg="#702020")
-    text2.tag_config("tag1",foreground="#84C1FF")
-    text2.tag_config("tag2",foreground="#FFDC35")
-    text2.tag_config("tag3",foreground="#FF2020")
+    lblx.config(text="   ➠ 耕地準備中,請稍後...... ",bg=Gui_Color[3])
+    text2.tag_config("tag1",foreground=Gui_Color[0])
+    text2.tag_config("tag2",foreground=Gui_Color[1])
+    text2.tag_config("tag3",foreground=Gui_Color[2])
     # 開始執行指令
     with subprocess.Popen(CmdStr,startupinfo=startupinfo,shell=False,stdout=subprocess.PIPE, stderr=subprocess.PIPE, stdin=subprocess.PIPE) as p:
-        lblx.config(text=" ➠ 開始耕地中,請稍後... ",bg="#903030")
+        lblx.config(text=" ➠ 開始耕地中,請稍後... ",bg=Gui_Color[4])
         while p.poll() == None:
             # 輸出執行LOG
             LineStr = p.stdout.readline().decode("big5")
@@ -223,44 +330,44 @@ def RunCmd(CmdStr):
             if "Plot Name:" in LineStr:     # 顯示目前耕地檔案名稱
                 LStr = LineStr.split()
                 etrxtext1.insert(0,LStr[2]+".plot")
-                etrxtext1.config(bg="#6C3365")
+                etrxtext1.config(bg=Gui_Color[20])
                 cp_delay = 1                #進入P圖階段,開始減少資源占用
             if "[P1]" in LineStr:
-                lblx.config(text=" ➠ 耕地中,第一階段... ",bg="#502020")
-                etrxtext2.config(bg="#7E3D76")
+                lblx.config(text=" ➠ 耕地中,第一階段... ",bg=Gui_Color[6])
+                etrxtext2.config(bg=Gui_Color[10])
             if "Phase 1 took" in LineStr:
                 LStr = LineStr.split()
                 etrxtext2.insert(0,LStr[3])
-                etrxtext2.config(bg="#003E3E")
+                etrxtext2.config(bg=Gui_Color[11])
             if "[P2]" in LineStr:
-                lblx.config(text=" ➠ 耕地中,第二階段... ",bg="#502020")
-                etrxtext3.config(bg="#7E3D76")
+                lblx.config(text=" ➠ 耕地中,第二階段... ",bg=Gui_Color[6])
+                etrxtext3.config(bg=Gui_Color[12])
             if "Phase 2 took" in LineStr:
                 LStr = LineStr.split()
                 etrxtext3.insert(0,LStr[3])
-                etrxtext3.config(bg="#003E3E")
+                etrxtext3.config(bg=Gui_Color[13])
             if "[P3-" in LineStr:
-                lblx.config(text=" ➠ 耕地中,第三階段... ",bg="#502020")
-                etrxtext4.config(bg="#7E3D76")
+                lblx.config(text=" ➠ 耕地中,第三階段... ",bg=Gui_Color[6])
+                etrxtext4.config(bg=Gui_Color[14])
             if "Phase 3 took" in LineStr:
                 LStr = LineStr.split()
                 etrxtext4.insert(0,LStr[3])
-                etrxtext4.config(bg="#003E3E")
+                etrxtext4.config(bg=Gui_Color[15])
             if "[P4]" in LineStr:
-                lblx.config(text=" ➠ 耕地中,第四階段... ",bg="#502020")
-                etrxtext5.config(bg="#7E3D76")
+                lblx.config(text=" ➠ 耕地中,第四階段... ",bg=Gui_Color[6])
+                etrxtext5.config(bg=Gui_Color[16])
             if "Phase 4 took" in LineStr:
                 LStr = LineStr.split()
                 etrxtext5.insert(0,LStr[3])
-                etrxtext5.config(bg="#003E3E")
+                etrxtext5.config(bg=Gui_Color[17])
                 cp_delay = 0                  #P圖階段完成,開始回復即時檢測
             if "Total plot creation time was" in LineStr:
                 stra =  LineStr.split()
                 sec = str(round(float(stra[5])/60,1))
                 cp_Num += 1
             if "Started copy to" in LineStr:
-                lblx.config(text=" ➠ 複製耕地往目標資料夾中,耕地總計時間: "+str(sec)+" 分鐘",bg="#BF0060")
-                etrxtext1.config(bg="#003E3E")
+                lblx.config(text=" ➠ 複製耕地往目標資料夾中,耕地總計時間: "+str(sec)+" 分鐘",bg=Gui_Color[5])
+                etrxtext1.config(bg=Gui_Color[21])
                 text2.insert(END,str(cp_Num)+"/"+cp_NumEnd,"tag1")
                 text2.insert(END,":")
                 text2.insert(END,str(sec)+"\n","tag2")
@@ -274,14 +381,14 @@ def RunCmd(CmdStr):
             text1.see(END)
     text1.insert(END,"\n ============================================================== \n")
     if cp_Interrupt:
-        lblx.config(text="   ➽ 中斷耕地完成! 請記得按下右下角清除暫存按鈕! \n",bg="#C0C040")
+        lblx.config(text="   ➽ 中斷耕地完成! 請記得按下右下角清除暫存按鈕! \n",bg=Gui_Color[7])
         text1.insert(END,"   ➽ 中斷耕地完成! 請記得按下右下角清除暫存按鈕! \n")
         text1.see(END)
         btn1.config(state=DISABLED)
         btn2.config(state=DISABLED)
         btnDeleteTemp.config(state=NORMAL)
     else:
-        lblx.config(text="   ➠ 耕地完成!  最後耕地總計花費: "+str(sec)+" 分鐘",bg="#206020")
+        lblx.config(text="   ➠ 耕地完成!  最後耕地總計花費: "+str(sec)+" 分鐘",bg=Gui_Color[9])
         text1.insert(END,"   ➠ 耕地完成!  最後耕地總計花費: "+str(sec)+" 分鐘 \n")
         text1.see(END)
         btn1.config(state=NORMAL)
@@ -308,6 +415,7 @@ def RunCmd(CmdStr):
 # ============================================
 # TODO: 耕地之前檢查,首先除錯,防呆!!!
 def RunChiaPlot():
+    global Gui_Color
     global counter
     global fname
     counter = 0
@@ -379,39 +487,39 @@ def RunChiaPlot():
             t1.start()
     elif err == 7:
         text1.insert(END,"   ➠ 目標路徑硬碟空間不足,或是路徑錯誤...... \n")
-        lblx.config(text="  ➠ 目標路徑硬碟空間不足,或是路徑錯誤....",bg="#F02080")    
+        lblx.config(text="  ➠ 目標路徑硬碟空間不足,或是路徑錯誤....",bg=Gui_Color[22])    
     elif err == 6:
         text1.insert(END,"   ➠ 礦池公鑰或是礦池合約與該選項沒有填入...... \n")
-        lblx.config(text="  ➠ 礦池公鑰或是礦池合約與該選項沒有填入....",bg="#F02080")
+        lblx.config(text="  ➠ 礦池公鑰或是礦池合約與該選項沒有填入....",bg=Gui_Color[22])
     elif err == 5:
         text1.insert(END,"   ➠ 設定框有遺漏輸入設定...... \n")
-        lblx.config(text="  ➠ 設定框內必須有輸入文字....",bg="#F02080")
+        lblx.config(text="  ➠ 設定框內必須有輸入文字....",bg=Gui_Color[22])
     elif err == 1:
         text1.insert(END,"   ➠ 暫存1,暫存2,或目標目錄其中有目錄是不存在! \n")
-        lblx.config(text="  ➠ 資料夾不存在所以停止耕地....",bg="#F02080")
+        lblx.config(text="  ➠ 資料夾不存在所以停止耕地....",bg=Gui_Color[22])
     elif err == 2:
         text1.insert(END,"   ➠ 耕地數,核心數,桶數量,3-4桶,有格子內輸入不是數字的文字! \n")
-        lblx.config(text="  ➠ 有格子內輸入不是數字的文字所以停止耕地....",bg="#F02080")
+        lblx.config(text="  ➠ 有格子內輸入不是數字的文字所以停止耕地....",bg=Gui_Color[22])
     elif err == 3:
         text1.insert(END,"   ➠ 暫存1,暫存2,或目標目錄中有空格! \n   ➠ madMAx43v3r/chia-plotter 不支援有空格的資料夾,請修正!\n")
-        lblx.config(text="  ➠ madMAx43v3r/chia-plotter 不支援有空格的資料夾...",bg="#F02080")
+        lblx.config(text="  ➠ madMAx43v3r/chia-plotter 不支援有空格的資料夾...",bg=Gui_Color[22])
     elif err == 99:
         text1.insert(END,"      程式發生一些狀況,請依照以下的說明處理!! \n")
         text1.insert(END," ============================================================== \n")
         text1.insert(END,"\n ➠ 耕地程式 \"" + os.path.abspath(fname) + "\" 檔案不存在!! \n")
         text1.insert(END,"\n ➠ 請前往 https://github.com/stotiks/chia-plotter/releases 下載,放在此資料夾!\n")
-        lblx.config(text="  ➠ 程式檢測到一些況狀,請排除...",bg="#604040")
+        lblx.config(text="  ➠ 程式檢測到一些況狀,請排除...",bg=Gui_Color[22])
         btn1.config(state=NORMAL)
     else:
         text1.insert(END,"      程式發生一些未知狀況,請回報狀況感謝\n")
-        lblx.config(text="  ➠ 程式檢測到一些況狀,請回報狀況...",bg="#604040")
+        lblx.config(text="  ➠ 程式檢測到一些況狀,請回報狀況...",bg=Gui_Color[22])
         btn1.config(state=NORMAL)
     text1.insert(END," ============================================================== \n")
 # ============================================
 # TODO: 預設值按鈕,將格子內資料全部改回預設值
 def BackDefault():
     text1.delete(1.0,END)
-    lblx.config(text="  ➠ 清除程式執行結果區,並清空變回預設值....",bg="#404040")
+    lblx.config(text="  ➠ 清除程式執行結果區,並清空變回預設值....",bg=Gui_Color[25])
     etr1.delete(0,END)
     etr1.insert(0,PoltNum)
     etr2.delete(0,END)
@@ -431,6 +539,7 @@ def BackDefault():
     etr8.delete(0,END)
     etr8.insert(0,TargetDir)
     text2.delete(1.0,END)
+    etrPool.delete(0,END)
 # ============================================
 # TODO: 儲存設定,並且結束程式
 def ExitApp():  
@@ -461,7 +570,7 @@ def InterruptChiaPlot():
                 global cp_delay
                 global cp_Num
                 text1.insert(END,"\n\n  ➼➼➼ 中斷 PID:"+cp_pid_chia_plot+" 中,這需要一些時間,請稍候!\n")
-                lblx.config(text=" ➼➼➼ 正在中斷目前耕地的過程中,請稍候...",bg="#C0C060",fg="#101010")
+                lblx.config(text=" ➼➼➼ 正在中斷目前耕地的過程中,請稍候...",bg=Gui_Color[8],fg="#101010")
                 with subprocess.Popen('taskkill.exe /F /pid:'+cp_pid_chia_plot,shell=True, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE) as p:
                     text1.insert(END,"\n\n "+p.stdout.read().decode("big5")+"\n")
                 time.sleep(0.2)
@@ -480,14 +589,14 @@ def InterruptChiaPlot():
 def DeleteTemp1Temp2File():
     text1.insert(END," ============================================================== \n")
     text1.insert(END,"\n  ➼➼➼ 正在刪除暫存的檔案,這需要一些時間,請稍候!\n")
-    lblx.config(text=" ➼➼➼ 正在刪除暫存的檔案,請稍候...",bg="#C0C060",fg="#101010")
+    lblx.config(text=" ➼➼➼ 正在刪除暫存的檔案,請稍候...",bg=Gui_Color[29],fg="#101010")
     text1.see(END)
     with subprocess.Popen("del "+etr4.get()+"*.tmp /f /q",shell=True, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE) as p1:
         text1.insert(END,p1.stdout.read().decode("big5")+"\n")
     with subprocess.Popen("del "+etr5.get()+"*.tmp /f /q",shell=True, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE) as p2:
         text1.insert(END,"\n"+p2.stdout.read().decode("big5")+"\n")
     text1.insert(END,"  ➼➼➼ 暫存1與暫存2刪除完畢! \n")
-    lblx.config(text=" ➼➼➼ 暫存1與暫存2刪除完畢!...",bg="#404040",fg="white")
+    lblx.config(text=" ➼➼➼ 暫存1與暫存2刪除完畢!...",bg=Gui_Color[30],fg="white")
     text1.see(END)
     btnDeleteTemp.config(state=DISABLED)
     global cp_Interrupt
@@ -513,15 +622,24 @@ def CheckDirList():
             return False
     except:
         return False
+# ============================================
+# TODO: 更換農會耕地還是原始耕地
 def ChangPlot():
+    text1.tag_config("tag1",foreground=Gui_Color[35])
+    text1.tag_config("tag2",foreground=Gui_Color[36])
+    text1.tag_config("tag3",foreground=Gui_Color[37])
     if radioValue.get() == 1:
         ppkComboBox.config(state=DISABLED)
         etrPool.config(state=NORMAL)
-        text1.insert(END,"\n  ➠ 切換至農會耕地!")
+        text1.insert(END,"\n  ➠ 切換至農會耕地!","tag1")
+        text1.see(END)
     else:
         etrPool.config(state=DISABLED)
         ppkComboBox.config(state=NORMAL)
-        text1.insert(END,"\n  ➠ 切換至原始耕地!")
+        text1.insert(END,"\n  ➠ 切換至原始耕地!","tag2")
+        text1.see(END)
+# ============================================
+# TODO: 讀取金鑰資料
 def ViewKey(vkeys):
     global GoldKey
     global counter
@@ -531,6 +649,8 @@ def ViewKey(vkeys):
         if GoldKey[counter][0] == vkeys:
             return GoldKey[counter][2]
         counter += 1
+# ============================================
+# TODO: 讀取礦池金鑰的資料
 def ViewPpkKey(vkeys):
     global GoldKey
     global counter
@@ -540,12 +660,14 @@ def ViewPpkKey(vkeys):
         if GoldKey[counter][0] == vkeys:
             return GoldKey[counter][1]
         counter += 1
+# ============================================
+# TODO: 將農會合約地址讀入下拉選單
 def PcaList(self):
     LocalStr = os.getenv("LOCALAPPDATA")
     if etrver1.get() != "":
         chiaver = etrver1.get()
     else:
-        tkMsg.showwarning(title="Chia 版本未設定",message="Chia 版本必須設定才能輸出 Chia 資訊!\n 這裡將版本預設為1.2.0")
+        tkMsg.showwarning(title="Chia 版本未設定",message="Chia 版本必須設定才能輸出 Chia 資訊!\n 這裡將版本預設為 "+ChiaVer)
         chiaver = ChiaVer
         etrver1.insert(0,ChiaVer)
     text1.delete(1.0,END)
@@ -574,7 +696,7 @@ def PcaList(self):
         text1.insert(END,pcaskeys+" \n")
         text1.insert(END,pcaserr+" \n")
         text1.insert(END," ============================================================== \n")
-        lblx.config(text="  ➠ 您共有 "+str(pcascounter)+" 組農會合約地址",bg="#404070")
+        lblx.config(text="  ➠ 您共有 "+str(pcascounter)+" 組農會合約地址",bg=Gui_Color[31])
         text1.insert(END,"  ➠ 您共有 "+str(pcascounter)+" 組農會合約地址...\n")
         text1.see(END)
         global counter
@@ -598,8 +720,10 @@ def PcaList(self):
     else:
         text1.insert(END," ============================================================== \n")
         text1.insert(END,"  ➠ 未先按下讀取公鑰,無法產生農會合約地址下拉選項...\n")
-        lblx.config(text="  ➠ 未先按下讀取公鑰,無法產生農會合約地址下拉選項...",bg="#404070")
+        lblx.config(text="  ➠ 未先按下讀取公鑰,無法產生農會合約地址下拉選項...",bg=Gui_Color[32])
         text1.see(END)
+# ============================================
+# TODO: 檢查硬碟剩餘空間
 def CheckHddFreeSize(self):
     TargetDir = etr8.get()
     global LanDisk
@@ -622,6 +746,22 @@ def CheckHddFreeSize(self):
         lbdisksize.config(text="硬碟不存在",fg="#903030")
         text1.insert(END,"  ➠ 請檢查最終路徑是否正確!\n")
         return 0
+def ShowColor():
+    global counter
+    counter = 0
+    text1.delete(1.0,END)
+    text1.insert(END," ==============將以下內容複製給朋友分享你的配色================ \n")
+    while TRUE:
+        text1.insert(END,Gui_Color[counter]+"\n")
+        counter += 1
+        if counter ==38:
+            break
+def ShowK33(self):
+    K33ComboBox = ttk.Combobox(width=10,justify=LEFT)
+    K33ComboBox.place(x=180,y=106)
+    K33ComboBox.delete(0,END)
+    K33ComboBox.insert(0,"K32")
+    K33ComboBox["value"] = "K32 K33不支援 K34不支援 K35不支援 K36不支援 K37不支援 K38不支援 K39不支援 K40不支援"
 # ============================================
 # TODO: 視窗主框架
 # ============================================
@@ -644,14 +784,14 @@ lab2 = Label(lbf1,text="程式執行結果區",font=fontsize)
 lab2.place(x=150,y=-3)
 lbver1 = Label(lbf1,text="請輸入你的Chia版本:")
 lbver1.place(x=419,y=-6)
-etrver1 = Entry(lbf1,width=8,bg="#303030",fg="white",justify=CENTER)
+etrver1 = Entry(lbf1,width=8,bg=Gui_Color[27],fg="white",justify=CENTER)
 etrver1.place(x=538,y=-4)
 # ============================================
 # TODO: 顯示區內文框
 # ============================================
 scroll = Scrollbar(lbf1)
 scroll.pack(side=RIGHT , fill=Y)
-text1 = Text(lbf1,width=85,height=20,bg="#303030",fg="white", yscrollcommand=scroll.set)
+text1 = Text(lbf1,width=85,height=20,bg=Gui_Color[28],fg="white", yscrollcommand=scroll.set)
 text1.place(x=0,y=16)
 scroll.config(command=text1.yview)
 # ============================================
@@ -659,27 +799,28 @@ scroll.config(command=text1.yview)
 # ============================================
 lb1 = Label(lbf2,text="耕地數",font=fontsize)
 lb1.place(x=4,y=5)
-etr1 = Entry(lbf2,bg="#606060",fg="white",width=4,justify=CENTER)
+etr1 = Entry(lbf2,bg=Gui_Color[33],fg="white",width=4,justify=CENTER)
 etr1.place(x=48,y=6)
+etr1.bind("<Double-Button>",ShowK33)
 lb1 = Label(lbf2,text="執行緒",font=fontsize)
 lb1.place(x=82,y=5)
-etr2 = Entry(lbf2,bg="#606060",fg="white",width=4,justify=CENTER)
+etr2 = Entry(lbf2,bg=Gui_Color[33],fg="white",width=4,justify=CENTER)
 etr2.place(x=128,y=6)
 lb1 = Label(lbf2,text="桶數量",font=fontsize)
 lb1.place(x=161,y=5)
-etr3 = Entry(lbf2,bg="#606060",fg="white",width=5,justify=CENTER)
+etr3 = Entry(lbf2,bg=Gui_Color[33],fg="white",width=5,justify=CENTER)
 etr3.place(x=205,y=6)
 lb4 = Label(lbf2,text="暫存１",font=fontsize)
 lb4.place(x=325,y=5)
-etr4 = Entry(lbf2,bg="#606060",fg="white",width=20,justify=LEFT)
+etr4 = Entry(lbf2,bg=Gui_Color[33],fg="white",width=20,justify=LEFT)
 etr4.place(x=372,y=6)
 lb5 = Label(lbf2,text="暫存２",font=fontsize)
 lb5.place(x=521,y=5)
-etr5 = Entry(lbf2,bg="#606060",fg="white",width=20,justify=LEFT)
+etr5 = Entry(lbf2,bg=Gui_Color[33],fg="white",width=20,justify=LEFT)
 etr5.place(x=568,y=6)
 lb8 = Label(lbf2,text="最終路徑",font=fontsize)
 lb8.place(x=359,y=30)
-etr8 = Entry(lbf2,bg="#606060",fg="white",width=30,justify=LEFT)
+etr8 = Entry(lbf2,bg=Gui_Color[33],fg="white",width=30,justify=LEFT)
 etr8.place(x=419,y=31)
 etr8.bind("<Key>",CheckHddFreeSize)
 HddFreeSize = round(((HDDusage.free/1024)/1024)/1024)
@@ -699,7 +840,7 @@ cbGTip = Hovertip(cbG,'進階功能: 非必要,確定要使用才打勾!')
 
 lb34 = Label(lbf2,text="3-4桶",font=fontsize)
 lb34.place(x=245,y=5)
-etr34 = Entry(lbf2,bg="#606060",fg="#A0A0A0",width=5,justify=CENTER)
+etr34 = Entry(lbf2,bg=Gui_Color[33],fg="#A0A0A0",width=5,justify=CENTER)
 etr34.place(x=280,y=6)
 etr34Tip = Hovertip(etr34,'進階功能: 非必要,這是設定第三與第四階段的桶數,預設值與桶數量相同')
 
@@ -707,7 +848,7 @@ lb6 = Label(lbf2,text="礦池公鑰",font=fontsize)
 lb6.place(x=4,y=57)
 ppkComboBox = ttk.Combobox(width=39,justify=LEFT)
 ppkComboBox.place(x=74,y=82)
-ppkPoolTip = Hovertip(ppkComboBox,'注意: 如在礦池合約地址輸入合約地址會自動停用礦池公鑰.')
+ppkPoolTip = Hovertip(ppkComboBox,'注意: 如果選擇農會耕地,礦池公鑰會自動無效')
 
 lb7 = Label(lbf2,text="農民公鑰",font=fontsize)
 lb7.place(x=4,y=31)
@@ -723,17 +864,17 @@ rdioOld.place(x=430,y=55)
 # 錢包指紋
 lbGoldKey = Label(lbf2,text="選擇錢包:",font=fontsize,fg="#6060FF")
 lbGoldKey.place(x=280,y=81)
-lbGoldKeyTip = Hovertip(lbGoldKey,'選擇錢包之前先選擇耕地再讀取公鑰,按Enter讀取農會,或是下拉選擇')
+lbGoldKeyTip = Hovertip(lbGoldKey,'選擇錢包之前先選擇耕地再讀取公鑰,按Enter讀取農會,或是下拉選擇\n如果該錢包沒有農會合約地址,會卡住很久!')
 pcaComboBox = ttk.Combobox(width=10,justify=LEFT)
 pcaComboBox.place(x=354,y=106)
 pcaComboBox.bind("<<ComboboxSelected>>", PcaList)
 pcaComboBox.bind("<Return>", PcaList)
-pcaComboBoxTip = Hovertip(pcaComboBox,'選擇錢包之前先選擇耕地再讀取公鑰,按Enter讀取農會,或是下拉選擇')
+pcaComboBoxTip = Hovertip(pcaComboBox,'選擇錢包之前先選擇耕地再讀取公鑰,按Enter讀取農會,或是下拉選擇\n如果該錢包沒有農會合約地址,會卡住很久!')
 lbPool = Label(lbf2,text="農會合約地址:(加入農會)",font=fontsize,fg="#FF6060")
 lbPool.place(x=4,y=81)
 etrPool = ttk.Combobox(width=58,justify=LEFT)
 etrPool.place(x=18,y=128)
-etrPoolTip = Hovertip(etrPool,'進階功能: 前三碼非xch字元會省略此參數並使用礦池公鑰,若使用此參數礦池公鑰會自動無效')
+etrPoolTip = Hovertip(etrPool,'進階功能: 前三碼非xch字元代表輸入的農會合約地址錯誤\n若使用此參數礦池公鑰會自動無效')
 # ============================================
 # TODO: 創建輸入區按鈕集合
 # ============================================
@@ -741,14 +882,16 @@ btn1 = Button(lbf2,text="執行耕地",font=fontsize,fg="#0000FF",width=9,height
 btn1.place(x=574,y=85)
 btn2 = Button(lbf2,text="結束程式",font=fontsize,fg="#743A3A",width=7,height=2,command=ExitApp)
 btn2.place(x=652,y=85)
-btn3 = Button(lbf2,text="預設值",font=fontsize ,height=2,command=BackDefault)
-btn3.place(x=519,y=85)
+btn3 = Button(lbf2,text=" 預設值 ",font=fontsize ,height=1,command=BackDefault)
+btn3.place(x=510,y=78)
+btn3 = Button(lbf2,text="顏色分享",font=fontsize,fg="#A020FF",height=1,command=ShowColor)
+btn3.place(x=505,y=103)
 btnX = Button(lbf2,text="讀取公鑰",font=fontsize,fg="#4B0091",height=2,command=ShowMeInfo)
-btnX.place(x=450,y=85)
+btnX.place(x=440,y=85)
 # ============================================
 # TODO: 創建進度區顯示框
 # ============================================
-lblx = Label(lbf3,text=" ➠ 歡迎使用耕地指令工具 Ver "+ToolVersion,bg="#202020",fg="white",width=65,height=2,font=tkFont.Font(size=11))
+lblx = Label(lbf3,text=" ➠ 歡迎使用耕地指令工具 Ver "+ToolVersion,bg=Gui_Color[34],fg="white",width=65,height=2,font=tkFont.Font(size=11))
 lblx.place(x=44,y=50)
 Interrupt = Button(lbf3,text="中斷\n耕地",font=fontsize,fg="#FF0000",command=InterruptChiaPlot)
 Interrupt.place(x=4,y=50)
@@ -758,30 +901,30 @@ btnDeleteTemp.place(x=573,y=50)
 btnDeleteTemp.config(state=DISABLED)
 lblxpn = Label(lbf3,text="目前耕地")
 lblxpn.place(x=4,y=0)
-etrxtext1 = Entry(lbf3,bg="#202020",fg="white",width=78,justify=LEFT)
+etrxtext1 = Entry(lbf3,bg=Gui_Color[19],fg="white",width=78,justify=LEFT)
 etrxtext1.place(x=60,y=2)
 lblxpn1 = Label(lbf3,text="第一階段耗時")
 lblxpn1.place(x=4,y=25)
-etrxtext2 = Entry(lbf3,bg="#C0C0C0",fg="white",width=9,justify=LEFT)
+etrxtext2 = Entry(lbf3,bg=Gui_Color[18],fg="white",width=9,justify=LEFT)
 etrxtext2.place(x=85,y=27)
 lblxpn2 = Label(lbf3,text="第二階段耗時")
 lblxpn2.place(x=155,y=25)
-etrxtext3 = Entry(lbf3,bg="#C0C0C0",fg="white",width=9,justify=LEFT)
+etrxtext3 = Entry(lbf3,bg=Gui_Color[18],fg="white",width=9,justify=LEFT)
 etrxtext3.place(x=237,y=27)
 lblxpn3 = Label(lbf3,text="第三階段耗時")
 lblxpn3.place(x=308,y=25)
-etrxtext4 = Entry(lbf3,bg="#C0C0C0",fg="white",width=9,justify=LEFT)
+etrxtext4 = Entry(lbf3,bg=Gui_Color[18],fg="white",width=9,justify=LEFT)
 etrxtext4.place(x=390,y=27)
 lblxpn4 = Label(lbf3,text="第四階段耗時")
 lblxpn4.place(x=460,y=25)
-etrxtext5 = Entry(lbf3,bg="#C0C0C0",fg="white",width=9,justify=LEFT)
+etrxtext5 = Entry(lbf3,bg=Gui_Color[18],fg="white",width=9,justify=LEFT)
 etrxtext5.place(x=543,y=27)
 # ============================================
 # TODO: 創建紀錄區顯示框
 # ============================================
 scroll2 = Scrollbar(lbf4)
 scroll2.pack(side=RIGHT , fill=Y)
-text2 = Text(lbf4,width=11,height=29,bg="#303030",fg="white",yscrollcommand=scroll2.set)
+text2 = Text(lbf4,width=11,height=29,bg=Gui_Color[26],fg="white",yscrollcommand=scroll2.set)
 text2.place(x=1,y=10)
 scroll2.config(command=text2.yview)
 # ============================================
@@ -843,7 +986,10 @@ else:
 # ============================================
 # TODO: 啟動系統後第一次顯示的訊息
 # ============================================
-#text1.delete(1.0,END)
+text1.delete(1.0,END)
+text1.tag_config("tag1",foreground=Gui_Color[35])
+text1.tag_config("tag2",foreground=Gui_Color[36])
+text1.tag_config("tag3",foreground=Gui_Color[37])
 text1.insert(END," ============================================================== \n")
 text1.insert(END,"   ➠ 作者: mymag (mymag_20@msn.com)\n")
 text1.insert(END,"   ➠ 網頁: http://fgc.tw\n")
@@ -853,23 +999,24 @@ text1.insert(END,"   ➠ Telegram 遊戲社群: https://t.me/QiYiWorld\n")
 text1.insert(END,"   ➠ 捐贈(Chia XCH): xch1vk3tcw89xtk6uqzgxuyssuwm9s4dsklnaa00hyppevxlg9tpulys98erd4\n")
 text1.insert(END,"   ➠ 捐贈(BTC-Bitcoin): 33gxYWhbp5MsSfsrH5J5dr2dmmbhZdFApq\n")
 text1.insert(END," ============================================================== \n")
-text1.insert(END,"   ➠ madMAx43v3r/chia-plotter 最新版下載位置 \n   ➠ https://github.com/stotiks/chia-plotter/releases\n")
+text1.insert(END,"   ➠ madMAx43v3r/chia-plotter 最新版下載位置 \n","tag1")
+text1.insert(END,"   ➠ https://github.com/stotiks/chia-plotter/releases \n")
 text1.insert(END," ============================================================== \n")
-text1.insert(END,"   ➲ 請問有沒有支援K32以外的耕地呢? \n")
-text1.insert(END,"   ➲ 因為是 madMAx43v3r/chia-plotter 只支援K32,並不是CTPool不支援\n")
+text1.insert(END,"   ➲ 請問有沒有支援K32以外的耕地呢? \n","tag3")
+text1.insert(END,"   ➲ 因為是 madMAx43v3r/chia-plotter 只支援K32,並不是CTPool不支援\n","tag3")
 text1.insert(END," ============================================================== \n")
-text1.insert(END,"   ➲ 感謝每一位捐贈者,不管多少,請受小的一拜! 感謝! \n")
+text1.insert(END,"   ➲ 感謝每一位捐贈者,不管多少,請受小的一拜! 感謝! \n","tag2")
 
 if not os.path.exists(fname):
     text1.insert(END,"\n ----------------------------------------------------------------------------- \n")
-    text1.insert(END,"   ➠ 耕地程式 \"" + os.path.abspath(fname) + "\" 檔案不存在!! \n")
-    text1.insert(END,"   ➠ 請前往 https://github.com/stotiks/chia-plotter/releases 下載,放在此資料夾!\n")
-    text1.insert(END,"   ➠ 本軟體只是輔助工具,需要 chia-plotter 才能使用!\n")
+    text1.insert(END,"   ➠ 耕地程式 \"" + os.path.abspath(fname) + "\" 檔案不存在!! \n","tag3")
+    text1.insert(END,"   ➠ 請前往 https://github.com/stotiks/chia-plotter/releases 下載,放在此資料夾!\n","tag3")
+    text1.insert(END,"   ➠ 本軟體只是輔助工具,需要 chia-plotter 才能使用!\n","tag3")
     text1.insert(END," ----------------------------------------------------------------------------- \n")
 if CheckDirList():
     btnDeleteTemp.config(state=NORMAL)
     text1.insert(END,"\n ----------------------------------------------------------------------------- \n")
-    text1.insert(END,"   ➠ 暫存資料夾內有檔案,建議清除後再執行耕地!\n")
+    text1.insert(END,"   ➠ 暫存資料夾內有檔案,建議清除後再執行耕地!\n","tag1")
     text1.insert(END," ----------------------------------------------------------------------------- \n")
 # ============================================
 win.mainloop()
