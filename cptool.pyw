@@ -18,7 +18,7 @@ from idlelib.tooltip import Hovertip
 # ============================================
 # 應用程式設定
 # ============================================
-ToolVersion = "0.43"                #程式版本
+ToolVersion = "0.44"                #程式版本
 win = Tk()                          #宣告視窗
 win.title("➠ 高速耕地執行工具 ➠ Ver "+ToolVersion)
 win.geometry("740x580")
@@ -99,7 +99,7 @@ def ShowMeInfo():
     if etrver1.get() != "":
         chiaver = etrver1.get()
     else:
-        tkMsg.showwarning(title="Chia 版本未設定",message="Chia 版本必須設定才能輸出 Chia 公鑰資訊!\n 這裡將版本預設為1.2.0")
+        tkMsg.showwarning(title="Chia 版本未設定",message="Chia 版本必須設定才能輸出 Chia 公鑰資訊!\n 這裡將版本預設為 "+ChiaVer)
         chiaver = ChiaVer
         etrver1.insert(0,ChiaVer)
     text1.delete(1.0,END)
