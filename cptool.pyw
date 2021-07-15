@@ -18,7 +18,7 @@ from idlelib.tooltip import Hovertip
 # ============================================
 # 應用程式設定
 # ============================================
-ToolVersion = "0.42"                #程式版本
+ToolVersion = "0.43"                #程式版本
 win = Tk()                          #宣告視窗
 win.title("➠ 高速耕地執行工具 ➠ Ver "+ToolVersion)
 win.geometry("740x580")
@@ -45,14 +45,15 @@ startupinfo.dwFlags |= subprocess.STARTF_USESHOWWINDOW
 fontsize = tkFont.Font(size="10")     #字型尺寸
 hddsizefont = tkFont.Font(family="微軟正黑體",size="10",weight="bold")
 fname = cwd+"\\chia_plot.exe"       #chia_plot 高速P圖程式的檔案名稱
-ChiaVer = "1.2.1"                   #安裝的Chia版本(查詢公鑰,礦池公鑰,農民公鑰需要)
+ChiaVer = "1.2.2"                   #安裝的Chia版本(查詢公鑰,礦池公鑰,農民公鑰需要)
 PoltNum = "1"                       #執行耕地數量(一次要生產的耕地數量)
 CoreNum = "8"                       #耕地使用執行緒數量(依照自己的核心數調整)
 BuketNum = "256"                    #耕地使用桶數(不建議更動)
 TempDir1 = "D:\\CHIATEMP\\"         #耕地使用的暫存資料夾1
 TempDir2 = "D:\\CHIATEMP\\"         #耕地使用的暫存資料夾2(作者建議使用RAM)
 TargetDir = "E:\\CHIA\\"            #耕地完成檔案放置位置
-HDDusage = psutil.disk_usage("C:\\")
+HDDusage = psutil.disk_usage("C:\\")#目標硬碟預設值為 C:\
+LanDisk = FALSE                     #預設是否使用網路硬碟
 PoolPublicKey = ""                  #礦池公鑰,請按顯示公鑰查詢
 FarmerPublicKey = ""                #農民公鑰,請按顯示公鑰查詢
 chkValue = BooleanVar()
@@ -222,48 +223,48 @@ def RunCmd(CmdStr):
             if "Plot Name:" in LineStr:     # 顯示目前耕地檔案名稱
                 LStr = LineStr.split()
                 etrxtext1.insert(0,LStr[2]+".plot")
-                etrxtext1.config(bg="#802020")
+                etrxtext1.config(bg="#6C3365")
                 cp_delay = 1                #進入P圖階段,開始減少資源占用
             if "[P1]" in LineStr:
                 lblx.config(text=" ➠ 耕地中,第一階段... ",bg="#502020")
-                etrxtext2.config(bg="#702020")
+                etrxtext2.config(bg="#7E3D76")
             if "Phase 1 took" in LineStr:
                 LStr = LineStr.split()
                 etrxtext2.insert(0,LStr[3])
-                etrxtext2.config(bg="#206020")
+                etrxtext2.config(bg="#003E3E")
             if "[P2]" in LineStr:
-                lblx.config(text=" ➠ 耕地中,第二階段... ",bg="#602020")
-                etrxtext3.config(bg="#702020")
+                lblx.config(text=" ➠ 耕地中,第二階段... ",bg="#502020")
+                etrxtext3.config(bg="#7E3D76")
             if "Phase 2 took" in LineStr:
                 LStr = LineStr.split()
                 etrxtext3.insert(0,LStr[3])
-                etrxtext3.config(bg="#206020")
+                etrxtext3.config(bg="#003E3E")
             if "[P3-" in LineStr:
-                lblx.config(text=" ➠ 耕地中,第三階段... ",bg="#702525")
-                etrxtext4.config(bg="#702020")
+                lblx.config(text=" ➠ 耕地中,第三階段... ",bg="#502020")
+                etrxtext4.config(bg="#7E3D76")
             if "Phase 3 took" in LineStr:
                 LStr = LineStr.split()
                 etrxtext4.insert(0,LStr[3])
-                etrxtext4.config(bg="#206020")
+                etrxtext4.config(bg="#003E3E")
             if "[P4]" in LineStr:
-                lblx.config(text=" ➠ 耕地中,第四階段... ",bg="#803030")
-                etrxtext5.config(bg="#702020")
+                lblx.config(text=" ➠ 耕地中,第四階段... ",bg="#502020")
+                etrxtext5.config(bg="#7E3D76")
             if "Phase 4 took" in LineStr:
                 LStr = LineStr.split()
                 etrxtext5.insert(0,LStr[3])
-                etrxtext5.config(bg="#206020")
+                etrxtext5.config(bg="#003E3E")
                 cp_delay = 0                  #P圖階段完成,開始回復即時檢測
             if "Total plot creation time was" in LineStr:
                 stra =  LineStr.split()
                 sec = str(round(float(stra[5])/60,1))
                 cp_Num += 1
             if "Started copy to" in LineStr:
-                lblx.config(text=" ➠ 複製耕地往目標資料夾中,耕地總計時間: "+str(sec)+" 分鐘",bg="#A03030")
-                etrxtext1.config(bg="#408040")
+                lblx.config(text=" ➠ 複製耕地往目標資料夾中,耕地總計時間: "+str(sec)+" 分鐘",bg="#BF0060")
+                etrxtext1.config(bg="#003E3E")
                 text2.insert(END,str(cp_Num)+"/"+cp_NumEnd,"tag1")
                 text2.insert(END,":")
                 text2.insert(END,str(sec)+"\n","tag2")
-                if CheckHddFreeSize(None) <= 318:
+                if CheckHddFreeSize(None) <= 318 and not LanDisk:
                     text2.insert(END,"硬碟快用完\n","tag3")
                 cp_delay = 0
                 text2.see(END)
@@ -280,7 +281,7 @@ def RunCmd(CmdStr):
         btn2.config(state=DISABLED)
         btnDeleteTemp.config(state=NORMAL)
     else:
-        lblx.config(text="   ➠ 耕地完成!  最後耕地總計花費: "+str(sec)+" 分鐘",bg="#409040")
+        lblx.config(text="   ➠ 耕地完成!  最後耕地總計花費: "+str(sec)+" 分鐘",bg="#206020")
         text1.insert(END,"   ➠ 耕地完成!  最後耕地總計花費: "+str(sec)+" 分鐘 \n")
         text1.see(END)
         btn1.config(state=NORMAL)
@@ -357,7 +358,7 @@ def RunChiaPlot():
             cmdstr = cmdstr + " -p " + ppkComboBox.get()
     cmdstr = cmdstr + " -f " + fpkComboBox.get()
     #開始時先更新硬碟容量
-    if CheckHddFreeSize(None) < 106:
+    if CheckHddFreeSize(None) < 106 and not LanDisk:
         err = 7
     #開始檢測後執行
     text1.delete(1.0,END)
@@ -601,16 +602,23 @@ def PcaList(self):
         text1.see(END)
 def CheckHddFreeSize(self):
     TargetDir = etr8.get()
+    global LanDisk
+    if TargetDir[:2] == "\\\\" or TargetDir[:3] == "ftp":
+        LanDisk = TRUE
+        lbdisksize.config(text="網路硬碟",fg="#303090")
+        return 0
     try:
         if len(TargetDir) >=2:
-            HDDusage = psutil.disk_usage(TargetDir[0:2])
+            HDDusage = psutil.disk_usage(TargetDir[:2])
             HddFreeSize = round(((HDDusage.free/1024)/1024)/1024)
             if HddFreeSize >= 106:
                 lbdisksize.config(text=str(HddFreeSize)+" GiB",fg="#208020")
             else:
                 lbdisksize.config(text=str(HddFreeSize)+" GiB",fg="#802020")
+            LanDisk = FALSE
             return HddFreeSize
     except:
+        LanDisk = FALSE
         lbdisksize.config(text="硬碟不存在",fg="#903030")
         text1.insert(END,"  ➠ 請檢查最終路徑是否正確!\n")
         return 0
@@ -823,7 +831,7 @@ if os.path.exists(SFileName):
             chkValw = FALSE
         chkValueW.set(chkValw)
     except:
-        chkValueW.set(False) 
+        chkValueW.set(TRUE) 
     try:    # 讀取錢包指紋
         if len(list1[12].replace("\n","")) > 0:
             pcaComboBox.insert(END,list1[12].replace("\n",""))
