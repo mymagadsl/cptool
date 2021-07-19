@@ -30,4 +30,5 @@
     2.捐贈(BTC-Bitcoin): 33gxYWhbp5MsSfsrH5J5dr2dmmbhZdFApq
     3.程式碼協助: https://github.com/mymagadsl/cptool/pulls
     
-![cptool_0 35](https://user-images.githubusercontent.com/6682942/125160823-a940f680-e1b1-11eb-83b4-84e3d6724201.PNG)
+![cptool](https://user-images.githubusercontent.com/6682942/126092272-67e66d4b-b2af-41f1-b03d-5e5a75464bb5.png)
+
