@@ -7,18 +7,19 @@
 # ============================================
 from tkinter import *
 import os,sys
+import platform
+import ctypes
 import time
 import subprocess
 import threading
 import tkinter.font as tkFont
 import tkinter.ttk as ttk
 import tkinter.messagebox as tkMsg
-import psutil
 from idlelib.tooltip import Hovertip
 # ============================================
 # 應用程式設定
 # ============================================
-ToolVersion = "0.50"                #程式版本
+ToolVersion = "0.51"                #程式版本
 win = Tk()                          #宣告視窗
 win.title("➠ 高速耕地執行工具 ➠ Ver "+ToolVersion)
 win.geometry("740x580")
@@ -52,7 +53,7 @@ BuketNum = "256"                    #耕地使用桶數(不建議更動)
 TempDir1 = "D:\\CHIATEMP\\"         #耕地使用的暫存資料夾1
 TempDir2 = "D:\\CHIATEMP\\"         #耕地使用的暫存資料夾2(作者建議使用RAM)
 TargetDir = "E:\\CHIA\\"            #耕地完成檔案放置位置
-HDDusage = psutil.disk_usage("C:\\")#目標硬碟預設值為 C:\
+HDDusage = 0                        #目標硬碟預設值為 C:\
 LanDisk = FALSE                     #預設是否使用網路硬碟
 PoolPublicKey = ""                  #礦池公鑰,請按顯示公鑰查詢
 FarmerPublicKey = ""                #農民公鑰,請按顯示公鑰查詢
@@ -724,6 +725,17 @@ def PcaList(self):
         text1.insert(END,"  ➠ 未先按下讀取公鑰,無法產生農會合約地址下拉選項...\n")
         lblx.config(text="  ➠ 未先按下讀取公鑰,無法產生農會合約地址下拉選項...",bg=Gui_Color[32])
         text1.see(END)
+
+# ============================================
+# TODO:
+def get_free_space_mb(folder):
+    if platform.system() == 'Windows':
+        free_bytes = ctypes.c_ulonglong(0)
+        ctypes.windll.kernel32.GetDiskFreeSpaceExW(ctypes.c_wchar_p(folder), None, None, ctypes.pointer(free_bytes))
+        return free_bytes.value
+    else:
+        st = os.statvfs(folder)
+        return st.f_bavail * st.f_frsize
 # ============================================
 # TODO: 檢查硬碟剩餘空間
 def CheckHddFreeSize(self):
@@ -735,10 +747,13 @@ def CheckHddFreeSize(self):
         return 0
     try:
         if len(TargetDir) >=2:
-            HDDusage = psutil.disk_usage(TargetDir[:2])
-            HddFreeSize = round(((HDDusage.free/1024)/1024)/1024)
+            HDDusage = get_free_space_mb(TargetDir[:2])
+            HddFreeSize = round(((HDDusage/1024)/1024)/1024)
             if HddFreeSize >= 106:
                 lbdisksize.config(text=str(HddFreeSize)+" GiB",fg="#208020")
+            elif HddFreeSize == 0:
+                lbdisksize.config(text="硬碟不存在",fg="#903030")
+                text1.insert(END,"  ➠ 請檢查最終路徑是否正確!\n")
             else:
                 lbdisksize.config(text=str(HddFreeSize)+" GiB",fg="#802020")
             LanDisk = FALSE
@@ -825,7 +840,7 @@ lb8.place(x=359,y=30)
 etr8 = Entry(lbf2,bg=Gui_Color[33],fg="white",width=30,justify=LEFT)
 etr8.place(x=419,y=31)
 etr8.bind("<Key>",CheckHddFreeSize)
-HddFreeSize = round(((HDDusage.free/1024)/1024)/1024)
+HddFreeSize = round(((HDDusage/1024)/1024)/1024)
 if HddFreeSize >= 106:
     lbdisksize = Label(lbf2,text=str(HddFreeSize)+" GiB",fg="#107010",font=hddsizefont,width=10)
 else:
