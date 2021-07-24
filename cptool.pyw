@@ -19,7 +19,7 @@ from idlelib.tooltip import Hovertip
 # ============================================
 # 應用程式設定
 # ============================================
-ToolVersion = "0.51"                #程式版本
+ToolVersion = "0.52"                #程式版本
 win = Tk()                          #宣告視窗
 win.title("➠ 高速耕地執行工具 ➠ Ver "+ToolVersion)
 win.geometry("740x580")
@@ -149,26 +149,29 @@ Gui_Color = [   #此變數為顏色預設值
 counter=0
 SFileName = cwd+"\\gui_color.ini"
 if os.path.exists(SFileName): #如果檔案存在就讀取
-    SFile = open(cwd+"\\gui_color.ini",mode="r",encoding="utf-8")
-    list1 =  SFile.readlines()
-    while TRUE:
-        list1[counter] = list1[counter].replace("\n","")
-        Gui_Color[counter] = list1[counter][:7]
-        counter += 1
-        if counter == 38:
-            break
-    SFile.close
+    try:
+        SFile = open(cwd+"\\gui_color.ini",mode="r",encoding="utf-8")
+        list1 =  SFile.readlines()
+        while TRUE:
+            list1[counter] = list1[counter].replace("\n","")
+            Gui_Color[counter] = list1[counter][:7]
+            counter += 1
+            if counter == 38:
+                break
+        SFile.close
+    except:
+        tkMsg.showwarning(cwd+"\\gui_color.ini 檔案讀取失敗", cwd+"\\gui_color.ini"+" 檔案讀取失敗\n有可能檔案已經損壞,建議刪除此檔案\n系統會於下次啟動時重建檔案")
 else: #如果檔案不存在就寫入
-    SFile = open(cwd+"\\gui_color.ini",mode="w")
-    while TRUE:
-        try:
+    try:
+        SFile = open(cwd+"\\gui_color.ini",mode="w")
+        while TRUE:
             SFile.writelines(Gui_Color[counter]+"\n")
             counter += 1
             if counter == 38:
                 break
-        except:
-            break
         SFile.close
+    except:
+        tkMsg.showwarning(cwd+"\\gui_color.ini 檔案寫入失敗","請確認您的資料夾內檔案可讀寫的權限是否足夠,或是本軟體的權限是否足夠!")
 # ============================================
 # TODO: 清除進度區資料
 def UseTime():
@@ -725,9 +728,8 @@ def PcaList(self):
         text1.insert(END,"  ➠ 未先按下讀取公鑰,無法產生農會合約地址下拉選項...\n")
         lblx.config(text="  ➠ 未先按下讀取公鑰,無法產生農會合約地址下拉選項...",bg=Gui_Color[32])
         text1.see(END)
-
 # ============================================
-# TODO:
+# TODO: 計算目前硬碟剩餘空間
 def get_free_space_mb(folder):
     if platform.system() == 'Windows':
         free_bytes = ctypes.c_ulonglong(0)
@@ -737,7 +739,7 @@ def get_free_space_mb(folder):
         st = os.statvfs(folder)
         return st.f_bavail * st.f_frsize
 # ============================================
-# TODO: 檢查硬碟剩餘空間
+# TODO: 檢查硬碟剩餘空間後顯示於最終目錄後方
 def CheckHddFreeSize(self):
     TargetDir = etr8.get()
     global LanDisk
@@ -763,6 +765,8 @@ def CheckHddFreeSize(self):
         lbdisksize.config(text="硬碟不存在",fg="#903030")
         text1.insert(END,"  ➠ 請檢查最終路徑是否正確!\n")
         return 0
+# ============================================
+# TODO: 將顏色碼顯示在輸出框,給使用者分享
 def ShowColor():
     global counter
     counter = 0
@@ -773,6 +777,8 @@ def ShowColor():
         counter += 1
         if counter ==38:
             break
+# ============================================
+# TODO: 下拉選擇一個沒用的K32以外選項
 def ShowK33(self):
     K33ComboBox = ttk.Combobox(width=10,justify=LEFT)
     K33ComboBox.place(x=180,y=106)
@@ -1023,13 +1029,16 @@ text1.insert(END,"   ➲ 請問有沒有支援K32以外的耕地呢? \n","tag3")
 text1.insert(END,"   ➲ 因為是 madMAx43v3r/chia-plotter 只支援K32,並不是CTPool不支援\n","tag3")
 text1.insert(END," ============================================================== \n")
 text1.insert(END,"   ➲ 感謝每一位捐贈者,不管多少,請受小的一拜! 感謝! \n","tag2")
-
+# ============================================
+# TODO: 如果耕地工具不存在,告知使用者下載
 if not os.path.exists(fname):
     text1.insert(END,"\n ----------------------------------------------------------------------------- \n")
     text1.insert(END,"   ➠ 耕地程式 \"" + os.path.abspath(fname) + "\" 檔案不存在!! \n","tag3")
     text1.insert(END,"   ➠ 請前往 https://github.com/stotiks/chia-plotter/releases 下載,放在此資料夾!\n","tag3")
     text1.insert(END,"   ➠ 本軟體只是輔助工具,需要 chia-plotter 才能使用!\n","tag3")
     text1.insert(END," ----------------------------------------------------------------------------- \n")
+# ============================================
+# TODO: 如果站存資料夾有檔案,建議使用者清除後再耕地
 if CheckDirList():
     btnDeleteTemp.config(state=NORMAL)
     text1.insert(END,"\n ----------------------------------------------------------------------------- \n")
