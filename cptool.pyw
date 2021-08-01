@@ -19,7 +19,7 @@ from idlelib.tooltip import Hovertip
 # ============================================
 # 應用程式設定
 # ============================================
-ToolVersion = "0.52"                #程式版本
+ToolVersion = "0.53"                #程式版本
 win = Tk()                          #宣告視窗
 win.title("➠ 高速耕地執行工具 ➠ Ver "+ToolVersion)
 win.geometry("740x580")
@@ -233,7 +233,6 @@ def ShowMeInfo():
         text1.insert(END," ============================================================== \n")
         lblx.config(text="  ➠ 您共有 "+str(keyscounter)+" 組公鑰",bg=Gui_Color[24])
         text1.insert(END,"  ➠ 您共有 "+str(keyscounter)+" 組公鑰...\n")
-        text1.see(END)
         global counter
         counter = 1
         strppk=""
@@ -269,6 +268,8 @@ def ShowMeInfo():
                 pcaComboBox["value"] = strpca.split(" ")
                 break
             counter += 1
+        text1.see(END)
+        btnpca.config(state=NORMAL)
     else:
         text1.insert(END," ============================================================== \n")
         text1.insert(END,"  ➠ Chia主程式不存在,或是版本輸入不正確...\n")
@@ -312,6 +313,7 @@ def RunCmd(CmdStr):
     cbW.config(state=DISABLED)
     cbG.config(state=DISABLED)
     etrver1.config(state=DISABLED)
+    btnpca.config(state=DISABLED)
     text1.insert(END," ============================================================== \n")
     text1.insert(END,"   ➠ 耕地準備中,請稍後...... \n")
     text1.insert(END," ============================================================== \n")
@@ -667,8 +669,8 @@ def ViewPpkKey(vkeys):
             return GoldKey[counter][1]
         counter += 1
 # ============================================
-# TODO: 將農會合約地址讀入下拉選單
-def PcaList(self):
+# TODO: 讀取農會合約地址
+def PcaList(self=None):
     LocalStr = os.getenv("LOCALAPPDATA")
     if etrver1.get() != "":
         chiaver = etrver1.get()
@@ -680,17 +682,17 @@ def PcaList(self):
     text1.insert(END," ============================================================== \n")
     CmdStr = LocalStr+"\\chia-blockchain\\app-"+chiaver+"\\resources\\app.asar.unpacked\\daemon\\chia.exe"
     if os.path.exists(CmdStr) and len(GoldKey)> 1:
-        CmdStr ="\""+ CmdStr + "\" plotnft show -f " + pcaComboBox.get()
+        CmdStr ="\""+ CmdStr + "\" plotnft show -f " + pcaComboBox.get().replace(" ","")
         # 顯示指令
         text1.insert(END," "+CmdStr+" \n")
         if radioValue.get() == 1:
             fpkComboBox.delete(0,END)
-            fpkComboBox.insert(0,ViewKey(pcaComboBox.get()))
+            fpkComboBox.insert(0,ViewKey(pcaComboBox.get().replace(" ","")))
         else:
             fpkComboBox.delete(0,END)
-            fpkComboBox.insert(0,ViewKey(pcaComboBox.get()))
+            fpkComboBox.insert(0,ViewKey(pcaComboBox.get().replace(" ","")))
             ppkComboBox.delete(0,END)
-            ppkComboBox.insert(0,ViewPpkKey(pcaComboBox.get()))
+            ppkComboBox.insert(0,ViewPpkKey(pcaComboBox.get().replace(" ","")))
         with subprocess.Popen(CmdStr,startupinfo=startupinfo,shell=True,stdout=subprocess.PIPE, stderr=subprocess.PIPE, stdin=subprocess.PIPE) as p:
             pcaskeys = p.stdout.read().decode("big5")
             pcaserr = p.stderr.read().decode("big5")
@@ -704,14 +706,13 @@ def PcaList(self):
         text1.insert(END," ============================================================== \n")
         lblx.config(text="  ➠ 您共有 "+str(pcascounter)+" 組農會合約地址",bg=Gui_Color[31])
         text1.insert(END,"  ➠ 您共有 "+str(pcascounter)+" 組農會合約地址...\n")
-        text1.see(END)
         global counter
         counter = 1
         strpca=""
         # 開始擷取每個農會合約地址並且填入下拉選單
         text1.insert(END," ============================================================== \n")
         while TRUE:
-            pca = pcas[counter].partition("P2 singleton address (pool contract address for plotting): ")
+            pca = pcas[counter].partition("Pool contract address (use ONLY for plotting - do not send money to this address): ")
             text1.insert(END,pca[2][0:62]+"\n")
             strpca = strpca + pca[2][0:62] + " "
             if counter == 1:
@@ -723,6 +724,7 @@ def PcaList(self):
                 text1.insert(END," ============================================================== \n")
                 break
             counter += 1
+        text1.see(END)
     else:
         text1.insert(END," ============================================================== \n")
         text1.insert(END,"  ➠ 未先按下讀取公鑰,無法產生農會合約地址下拉選項...\n")
@@ -873,7 +875,7 @@ ppkComboBox = ttk.Combobox(width=39,justify=LEFT)
 ppkComboBox.place(x=74,y=82)
 ppkPoolTip = Hovertip(ppkComboBox,'注意: 如果選擇農會耕地,礦池公鑰會自動無效')
 
-lb7 = Label(lbf2,text="農民公鑰",font=fontsize)
+lb7 = Label(lbf2,text="農夫公鑰",font=fontsize)
 lb7.place(x=4,y=31)
 fpkComboBox = ttk.Combobox(width=39,justify=LEFT)
 fpkComboBox.place(x=74,y=55)
@@ -886,18 +888,22 @@ rdioOld.place(x=430,y=55)
 
 # 錢包指紋
 lbGoldKey = Label(lbf2,text="選擇錢包:",font=fontsize,fg="#6060FF")
-lbGoldKey.place(x=280,y=81)
-lbGoldKeyTip = Hovertip(lbGoldKey,'選擇錢包之前先選擇耕地再讀取公鑰,按Enter讀取農會,或是下拉選擇\n如果該錢包沒有農會合約地址,會卡住很久!')
+lbGoldKey.place(x=210,y=81)
+lbGoldKeyTip = Hovertip(lbGoldKey,'選擇錢包之後按下讀取合約\n如果該錢包沒有農會合約地址,會卡住很久!')
 pcaComboBox = ttk.Combobox(width=10,justify=LEFT)
-pcaComboBox.place(x=354,y=106)
-pcaComboBox.bind("<<ComboboxSelected>>", PcaList)
+pcaComboBox.place(x=289,y=106)
 pcaComboBox.bind("<Return>", PcaList)
-pcaComboBoxTip = Hovertip(pcaComboBox,'選擇錢包之前先選擇耕地再讀取公鑰,按Enter讀取農會,或是下拉選擇\n如果該錢包沒有農會合約地址,會卡住很久!')
-lbPool = Label(lbf2,text="農會合約地址:(加入農會)",font=fontsize,fg="#FF6060")
+pcaComboBoxTip = Hovertip(pcaComboBox,'選擇錢包之後按下讀取合約\n如果該錢包沒有農會合約地址,會卡住很久!')
+btnpca = Button(lbf2,text="讀取合約",font=fontsize,fg="#4B0091",command=PcaList)
+btnpca.place(x=372,y=80)
+btnpca.config(state=DISABLED)
+btnpcaTip = Hovertip(btnpca,'讀取合約之前先選擇耕地再讀取公鑰\n如果該錢包沒有農會合約地址,會卡住很久!')
+lbPool = Label(lbf2,text="農會合約地址:(加入農會耕地用)",font=fontsize,fg="#FF6060")
 lbPool.place(x=4,y=81)
 etrPool = ttk.Combobox(width=58,justify=LEFT)
 etrPool.place(x=18,y=128)
 etrPoolTip = Hovertip(etrPool,'進階功能: 前三碼非xch字元代表輸入的農會合約地址錯誤\n若使用此參數礦池公鑰會自動無效')
+
 # ============================================
 # TODO: 創建輸入區按鈕集合
 # ============================================
@@ -1026,7 +1032,7 @@ text1.insert(END,"   ➠ madMAx43v3r/chia-plotter 最新版下載位置 \n","tag
 text1.insert(END,"   ➠ https://github.com/stotiks/chia-plotter/releases \n")
 text1.insert(END," ============================================================== \n")
 text1.insert(END,"   ➲ 請問有沒有支援K32以外的耕地呢? \n","tag3")
-text1.insert(END,"   ➲ 因為是 madMAx43v3r/chia-plotter 只支援K32,並不是CTPool不支援\n","tag3")
+text1.insert(END,"   ➲ 因為是 madMAx43v3r/chia-plotter 只支援K32,並不是CPTool不支援\n","tag3")
 text1.insert(END," ============================================================== \n")
 text1.insert(END,"   ➲ 感謝每一位捐贈者,不管多少,請受小的一拜! 感謝! \n","tag2")
 # ============================================
