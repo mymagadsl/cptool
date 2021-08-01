@@ -13,8 +13,6 @@
     3. madMAx43v3r/chia-plotter build for windows
         https://github.com/stotiks/chia-plotter/releases
         
-    4. 原始碼執行在 0.38版本之後需要安裝 psutil 模組,在DOS視窗下輸入以下指令
-        pip install psutil
     
 使用方法:
 
